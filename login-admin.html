@@ -146,26 +146,21 @@
             text-decoration: underline;
         }
     </style>
-
 </head>
 
 <body>
     <!-- Login Card -->
     <div class="login-card">
-
         <!-- Tombol Kembali -->
         <div class="mb-3">
             <button type="button" class="btn btn-back" onclick="goBack()">
                 <i class="bi bi-arrow-left"></i> Kembali
             </button>
         </div>
-
         <div class="d-flex flex-column align-items-center mb-4 text-center">
             <h4 class="login-title mb-0">ADMIN LOGIN</h4>
         </div>
-
         <form id="loginForm">
-
             <div class="input-wrapper">
                 <i class="bi bi-envelope-fill icon-left"></i>
                 <input type="email" class="form-control" placeholder="Email Address" required>
@@ -180,55 +175,235 @@
             <button type="submit" class="btn btn-login mt-3">
                 LOG IN
             </button>
-
-            <a href="#" class="forgot-link">Forgot Password?</a>
+            <a href="#" class="forgot-link d-block mt-2">Forgot Password?</a>
+            <div class="text-center mt-3">
+                <span class="text-muted small">Belum punya akun?</span>
+                <a href="#" class="ms-1 fw-semibold text-decoration-none" data-bs-toggle="modal"
+                    data-bs-target="#modalDaftarAkun">
+                    Daftar Akun
+                </a>
+            </div>
         </form>
+    </div>
+    <!-- Modal Daftar Akun -->
+    <div class="modal fade" id="modalDaftarAkun" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 shadow">
 
+                <div class="modal-header border-0 pb-0">
+                    <h6 class="modal-title fw-semibold">Daftar Akun Admin</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body pt-2">
+                    <form id="registerForm">
+
+                        <!-- Nama -->
+                        <div class="mb-3">
+                            <label class="form-label small">Nama Lengkap</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">
+                                    <i class="bi bi-person-fill"></i>
+                                </span>
+                                <input type="text" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label class="form-label small">Email</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">
+                                    <i class="bi bi-envelope-fill"></i>
+                                </span>
+                                <input type="email" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-3">
+                            <label class="form-label small">Password</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">
+                                    <i class="bi bi-lock-fill"></i>
+                                </span>
+                                <input type="password" id="regPassword" class="form-control" required>
+                                <button class="btn btn-outline-secondary" type="button"
+                                    onclick="toggleRegPassword('regPassword', this)">
+                                    <i class="bi bi-eye-slash-fill"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Konfirmasi Password -->
+                        <div class="mb-3">
+                            <label class="form-label small">Konfirmasi Password</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">
+                                    <i class="bi bi-lock-fill"></i>
+                                </span>
+                                <input type="password" id="regConfirmPassword" class="form-control" required>
+                                <button class="btn btn-outline-secondary" type="button"
+                                    onclick="toggleRegPassword('regConfirmPassword', this)">
+                                    <i class="bi bi-eye-slash-fill"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-sm w-100">
+                            <i class="bi bi-person-plus me-1"></i> Daftar
+                        </button>
+
+                    </form>
+                </div>
+
+            </div>
+        </div>
     </div>
 
+    <!-- Modal Login Berhasil -->
+    <div class="modal fade" id="modalLoginSuccess" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content rounded-4 text-center">
+                <div class="modal-body py-4">
+                    <i class="bi bi-check-circle-fill text-success fs-1 mb-3"></i>
+                    <h6 class="fw-semibold mb-1">Login Berhasil</h6>
+                    <p class="text-muted small mb-0">
+                        Mengalihkan ke dashboard...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Akun Admin (Hardcoded)
-        const adminEmail = "admin@serbu.com";
-        const adminPassword = "admin123";
+        document.addEventListener("DOMContentLoaded", function () {
 
-        document.getElementById("loginForm").addEventListener("submit", function (e) {
-            e.preventDefault();
+            const loginForm = document.getElementById("loginForm");
+            const registerForm = document.getElementById("registerForm");
+            const btnMasukDashboard = document.getElementById("btnMasukDashboard");
 
-            const emailInput = document.querySelector('input[type="email"]').value;
-            const passwordInput = document.getElementById("passwordInput").value;
+            /* =======================
+               LOGIN ADMIN
+            ======================= */
+            if (loginForm) {
+                loginForm.addEventListener("submit", function (e) {
+                    e.preventDefault();
 
-            if (emailInput === adminEmail && passwordInput === adminPassword) {
+                    const emailInput = this.querySelector('input[type="email"]').value
+                        .trim().toLowerCase();
+                    const passwordInput = document.getElementById("passwordInput").value;
 
-                // Simpan status login
-                localStorage.setItem("isAdminLogin", "true");
+                    let akunAdmin = JSON.parse(localStorage.getItem("akunAdmin")) || [];
 
-                alert("Login Admin Berhasil!");
-                window.location.href = "admin/dashboard.html";
+                    const admin = akunAdmin.find(
+                        a => a.email === emailInput && a.password === passwordInput
+                    );
 
-            } else {
-                alert("Email atau Password salah!");
+                    if (!admin) {
+                        alert("Email atau Password salah!");
+                        return;
+                    }
+
+                    // simpan sesi login
+                    localStorage.setItem("adminLogin", JSON.stringify(admin));
+                    localStorage.setItem("isAdminLogin", "true");
+
+                    // tampilkan modal login sukses
+                    const modalSuccess = new bootstrap.Modal(
+                        document.getElementById("modalLoginSuccess")
+                    );
+                    modalSuccess.show();
+
+                    // redirect otomatis setelah 2 detik
+                    setTimeout(() => {
+                        window.location.href = "admin/dashboard.html";
+                    }, 2000);
+
+                });
             }
+
+
+
+            /* =======================
+               REGISTER ADMIN
+            ======================= */
+            if (registerForm) {
+                registerForm.addEventListener("submit", function (e) {
+                    e.preventDefault();
+
+                    const inputs = this.querySelectorAll("input");
+                    const nama = inputs[0].value.trim();
+                    const email = inputs[1].value.trim().toLowerCase();
+                    const password = inputs[2].value;
+                    const confirm = inputs[3].value;
+
+                    if (password !== confirm) {
+                        alert("Password tidak sama!");
+                        return;
+                    }
+
+                    let akunAdmin = JSON.parse(localStorage.getItem("akunAdmin")) || [];
+
+                    if (akunAdmin.find(a => a.email === email)) {
+                        alert("Email sudah terdaftar!");
+                        return;
+                    }
+
+                    akunAdmin.push({ nama, email, password });
+                    localStorage.setItem("akunAdmin", JSON.stringify(akunAdmin));
+
+                    alert("Akun berhasil didaftarkan!");
+                    this.reset();
+
+                    const modalEl = document.getElementById("modalDaftarAkun");
+                    bootstrap.Modal.getInstance(modalEl).hide();
+                });
+            }
+
         });
 
+        /* =======================
+           TOGGLE PASSWORD LOGIN
+        ======================= */
         function togglePassword() {
-            const passwordInput = document.getElementById("passwordInput");
+            const input = document.getElementById("passwordInput");
             const icon = document.querySelector(".toggle-password");
 
-            if (passwordInput.type === "password") {
-                passwordInput.type = "text";
+            if (input.type === "password") {
+                input.type = "text";
                 icon.classList.replace("bi-eye-slash-fill", "bi-eye-fill");
             } else {
-                passwordInput.type = "password";
+                input.type = "password";
                 icon.classList.replace("bi-eye-fill", "bi-eye-slash-fill");
             }
         }
 
+        /* =======================
+           TOGGLE PASSWORD REGISTER
+        ======================= */
+        function toggleRegPassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector("i");
+
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.replace("bi-eye-slash-fill", "bi-eye-fill");
+            } else {
+                input.type = "password";
+                icon.classList.replace("bi-eye-fill", "bi-eye-slash-fill");
+            }
+        }
+
+        /* =======================
+           BACK BUTTON
+        ======================= */
         function goBack() {
             window.location.href = "index.html";
         }
     </script>
-
 </body>
 
 </html>
