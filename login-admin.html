@@ -283,7 +283,6 @@
 
             const loginForm = document.getElementById("loginForm");
             const registerForm = document.getElementById("registerForm");
-            const btnMasukDashboard = document.getElementById("btnMasukDashboard");
 
             /* =======================
                LOGIN ADMIN
@@ -292,18 +291,18 @@
                 loginForm.addEventListener("submit", function (e) {
                     e.preventDefault();
 
-                    const emailInput = this.querySelector('input[type="email"]').value
-                        .trim().toLowerCase();
+                    const emailInput = this.querySelector('input[type="email"]')
+                        .value.trim().toLowerCase();
                     const passwordInput = document.getElementById("passwordInput").value;
 
-                    let akunAdmin = JSON.parse(localStorage.getItem("akunAdmin")) || [];
+                    const akunAdmin = JSON.parse(localStorage.getItem("akunAdmin")) || [];
 
                     const admin = akunAdmin.find(
                         a => a.email === emailInput && a.password === passwordInput
                     );
 
                     if (!admin) {
-                        alert("Email atau Password salah!");
+                        alert("Email atau password salah!");
                         return;
                     }
 
@@ -312,20 +311,16 @@
                     localStorage.setItem("isAdminLogin", "true");
 
                     // tampilkan modal login sukses
-                    const modalSuccess = new bootstrap.Modal(
-                        document.getElementById("modalLoginSuccess")
-                    );
+                    const modalEl = document.getElementById("modalLoginSuccess");
+                    const modalSuccess = new bootstrap.Modal(modalEl);
                     modalSuccess.show();
 
-                    // redirect otomatis setelah 2 detik
+                    // redirect otomatis
                     setTimeout(() => {
                         window.location.href = "admin/dashboard.html";
                     }, 2000);
-
                 });
             }
-
-
 
             /* =======================
                REGISTER ADMIN
@@ -334,20 +329,19 @@
                 registerForm.addEventListener("submit", function (e) {
                     e.preventDefault();
 
-                    const inputs = this.querySelectorAll("input");
-                    const nama = inputs[0].value.trim();
-                    const email = inputs[1].value.trim().toLowerCase();
-                    const password = inputs[2].value;
-                    const confirm = inputs[3].value;
+                    const nama = this.querySelector("#regNama").value.trim();
+                    const email = this.querySelector("#regEmail").value.trim().toLowerCase();
+                    const password = this.querySelector("#regPassword").value;
+                    const confirm = this.querySelector("#regConfirm").value;
 
                     if (password !== confirm) {
-                        alert("Password tidak sama!");
+                        alert("Konfirmasi password tidak cocok!");
                         return;
                     }
 
                     let akunAdmin = JSON.parse(localStorage.getItem("akunAdmin")) || [];
 
-                    if (akunAdmin.find(a => a.email === email)) {
+                    if (akunAdmin.some(a => a.email === email)) {
                         alert("Email sudah terdaftar!");
                         return;
                     }
@@ -359,7 +353,8 @@
                     this.reset();
 
                     const modalEl = document.getElementById("modalDaftarAkun");
-                    bootstrap.Modal.getInstance(modalEl).hide();
+                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                    if (modalInstance) modalInstance.hide();
                 });
             }
 
@@ -368,9 +363,9 @@
         /* =======================
            TOGGLE PASSWORD LOGIN
         ======================= */
-        function togglePassword() {
-            const input = document.getElementById("passwordInput");
-            const icon = document.querySelector(".toggle-password");
+        function togglePassword(btn, inputId) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector("i");
 
             if (input.type === "password") {
                 input.type = "text";
@@ -384,7 +379,7 @@
         /* =======================
            TOGGLE PASSWORD REGISTER
         ======================= */
-        function toggleRegPassword(inputId, btn) {
+        function toggleRegPassword(btn, inputId) {
             const input = document.getElementById(inputId);
             const icon = btn.querySelector("i");
 
@@ -401,9 +396,10 @@
            BACK BUTTON
         ======================= */
         function goBack() {
-            window.location.href = "index.html";
+            window.history.back();
         }
     </script>
+
 </body>
 
 </html>
