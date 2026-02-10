@@ -161,28 +161,51 @@
     </div>
 
     <script>
-        document.getElementById("formLogin").addEventListener("submit", function (e) {
-            e.preventDefault();
-
-            const kodeInput = document.getElementById("kodeInput").value.trim().toUpperCase();
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("formLogin");
             const pesan = document.getElementById("pesan");
 
-            let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
+            if (!form) return;
 
-            const data = kodeVoting.find(k => k.kode === kodeInput);
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
 
-            if (!data) {
-                pesan.innerText = "Kode tidak ditemukan!";
-                return;
-            }
+                pesan.innerText = "";
 
-            if (data.status === "Sudah Dipakai") {
-                pesan.innerText = "Kode sudah digunakan!";
-                return;
-            }
+                const kodeInput = document
+                    .getElementById("kodeInput")
+                    .value.trim()
+                    .toUpperCase();
 
-            localStorage.setItem("kodeAktif", kodeInput);
-            window.location.href = "voting.html";
+                if (!kodeInput) {
+                    pesan.innerText = "Kode tidak boleh kosong!";
+                    return;
+                }
+
+                let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
+
+                const index = kodeVoting.findIndex(k => k.kode === kodeInput);
+
+                if (index === -1) {
+                    pesan.innerText = "Kode tidak ditemukan!";
+                    return;
+                }
+
+                if (kodeVoting[index].status === "Sudah Dipakai") {
+                    pesan.innerText = "Kode sudah digunakan!";
+                    return;
+                }
+
+                // set kode aktif
+                localStorage.setItem("kodeAktif", kodeInput);
+
+                // tandai kode sudah dipakai
+                kodeVoting[index].status = "Sudah Dipakai";
+                localStorage.setItem("kodeVoting", JSON.stringify(kodeVoting));
+
+                // pindah ke halaman voting
+                window.location.href = "voting.html";
+            });
         });
     </script>
 </body>
