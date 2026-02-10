@@ -93,25 +93,26 @@
     <div class="container-fluid mt-4 px-4">
 
         <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="mb-0">Manajemen Kode Voting</h4>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0 fw-semibold">Manajemen Kode Voting</h6>
 
-            <div class="d-flex gap-2">
-                <button class="btn btn-success" onclick="downloadVoucherPDF()">
-                    <i class="bi bi-file-earmark-pdf me-1"></i> Unduh PDF
+            <div class="d-flex gap-1">
+                <button class="btn btn-success btn-sm d-flex align-items-center justify-content-center"
+                    onclick="downloadVoucherPDF()">
+                    <i class="bi bi-file-earmark-pdf"></i>
                 </button>
 
-                <button class="btn btn-outline-secondary" onclick="cetakKode()">
-                    <i class="bi bi-printer me-1"></i> Cetak
+                <button class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center"
+                    onclick="cetakKode()">
+                    <i class="bi bi-printer"></i>
                 </button>
 
-                <button class="btn btn-primary" onclick="generateKode()">
-                    <i class="bi bi-plus-circle me-1"></i> Generate Kode
+                <button class="btn btn-primary btn-sm d-flex align-items-center justify-content-center"
+                    onclick="generateKode()">
+                    <i class="bi bi-plus-circle"></i>
                 </button>
             </div>
         </div>
-
-
         <!-- Table -->
         <div class="card shadow-sm">
             <div class="card-body">
@@ -230,51 +231,51 @@
 
         function gunakanKode(kodeInput, kategoriDipilih, pesertaDipilih) {
 
-                let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
+            let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
 
-                // Ambil / buat device ID
-                let deviceId = localStorage.getItem("deviceId");
-                if (!deviceId) {
-                    deviceId = "DEV-" + Math.random().toString(36).substring(2, 10);
-                    localStorage.setItem("deviceId", deviceId);
-                }
-
-                // 🚫 CEK: Apakah device sudah pernah voting
-                const deviceSudahVote = kodeVoting.some(k => k.deviceId === deviceId);
-
-                if (deviceSudahVote) {
-                    tampilkanPeringatan("Device ini sudah melakukan voting. Anda tidak dapat vote lebih dari satu kali.");
-                    return false;
-                }
-
-                // Cari kode
-                const index = kodeVoting.findIndex(k => k.kode === kodeInput);
-
-                if (index === -1) {
-                    tampilkanPeringatan("Kode tidak valid!");
-                    return false;
-                }
-
-                if (kodeVoting[index].status === "Sudah Dipakai") {
-                    tampilkanPeringatan("Kode sudah digunakan!");
-                    return false;
-                }
-
-                // ✅ Simpan vote
-                kodeVoting[index].status = "Sudah Dipakai";
-                kodeVoting[index].deviceId = deviceId;
-                kodeVoting[index].kategori = kategoriDipilih;
-                kodeVoting[index].peserta = pesertaDipilih;
-                kodeVoting[index].tanggal = new Date().toISOString();
-
-                localStorage.setItem("kodeVoting", JSON.stringify(kodeVoting));
-
-                // Modal sukses (optional bisa dibuat hijau)
-                tampilkanPeringatan("Voting berhasil! Terima kasih telah berpartisipasi.");
-
-                tampilkanKode();
-                return true;
+            // Ambil / buat device ID
+            let deviceId = localStorage.getItem("deviceId");
+            if (!deviceId) {
+                deviceId = "DEV-" + Math.random().toString(36).substring(2, 10);
+                localStorage.setItem("deviceId", deviceId);
             }
+
+            // 🚫 CEK: Apakah device sudah pernah voting
+            const deviceSudahVote = kodeVoting.some(k => k.deviceId === deviceId);
+
+            if (deviceSudahVote) {
+                tampilkanPeringatan("Device ini sudah melakukan voting. Anda tidak dapat vote lebih dari satu kali.");
+                return false;
+            }
+
+            // Cari kode
+            const index = kodeVoting.findIndex(k => k.kode === kodeInput);
+
+            if (index === -1) {
+                tampilkanPeringatan("Kode tidak valid!");
+                return false;
+            }
+
+            if (kodeVoting[index].status === "Sudah Dipakai") {
+                tampilkanPeringatan("Kode sudah digunakan!");
+                return false;
+            }
+
+            // ✅ Simpan vote
+            kodeVoting[index].status = "Sudah Dipakai";
+            kodeVoting[index].deviceId = deviceId;
+            kodeVoting[index].kategori = kategoriDipilih;
+            kodeVoting[index].peserta = pesertaDipilih;
+            kodeVoting[index].tanggal = new Date().toISOString();
+
+            localStorage.setItem("kodeVoting", JSON.stringify(kodeVoting));
+
+            // Modal sukses (optional bisa dibuat hijau)
+            tampilkanPeringatan("Voting berhasil! Terima kasih telah berpartisipasi.");
+
+            tampilkanKode();
+            return true;
+        }
 
         function cetakKode() {
             let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
@@ -533,10 +534,10 @@
         }
 
         function tampilkanPeringatan(pesan) {
-                document.getElementById("isiPeringatan").innerText = pesan;
-                let modal = new bootstrap.Modal(document.getElementById('modalPeringatan'));
-                modal.show();
-            }
+            document.getElementById("isiPeringatan").innerText = pesan;
+            let modal = new bootstrap.Modal(document.getElementById('modalPeringatan'));
+            modal.show();
+        }
 
     </script>
 </body>
