@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Serbu Ramadhan</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+
+    <style>
+        .sidebar-link {
+            text-decoration: none;
+            color: #212529;
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .sidebar-link:hover {
+            background-color: #f1f1f1;
+        }
+
+        .offcanvas {
+            max-width: 250px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-light bg-white shadow-sm px-3">
+        <div class="d-flex align-items-center">
+            <!-- Hamburger -->
+            <button class="btn" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
+                <i class="bi bi-list fs-4"></i>
+            </button>
+            <span class="navbar-brand mb-0 h5 ms-2">Serbu Ramadhan</span>
+        </div>
+
+        <!-- Right Side -->
+        <div class="d-flex align-items-center gap-3">
+            <a href="#" class="text-dark">
+                <i class="bi bi-person-circle fs-2"></i>
+            </a>
+            <a href="../login-admin.html" class="text-danger">
+                <i class="bi bi-box-arrow-right fs-2"></i>
+            </a>
+        </div>
+    </nav>
+
+    <!-- SIDEBAR OFFCANVAS -->
+    <div class="offcanvas offcanvas-start" tabindex="-2" id="sidebarMenu">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Menu</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+
+        <div class="offcanvas-body">
+            <ul class="nav flex-column gap-2">
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link" href="dashboard.html">
+                        <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link" href="data-peserta.html">
+                        <i class="bi bi-people me-2"></i> Data Peserta
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link active bg-light" href="kode-voting.html">
+                        <i class="bi bi-key me-2"></i> Kode Voting
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link" href="hasil-voting.html">
+                        <i class="bi bi-bar-chart me-2"></i> Hasil Voting
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="container-fluid mt-4 px-4">
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Manajemen Kode Voting</h4>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-success" onclick="downloadVoucherPDF()">
+                    <i class="bi bi-file-earmark-pdf me-1"></i> Unduh PDF
+                </button>
+
+                <button class="btn btn-outline-secondary" onclick="cetakKode()">
+                    <i class="bi bi-printer me-1"></i> Cetak
+                </button>
+
+                <button class="btn btn-primary" onclick="generateKode()">
+                    <i class="bi bi-plus-circle me-1"></i> Generate Kode
+                </button>
+            </div>
+        </div>
+
+
+        <!-- Table -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle table-voting text-nowrap">
+                        <thead>
+                            <tr>
+                                <th width="5%">No</th>
+                                <th>Kode</th>
+                                <th>Status</th>
+                                <th>Kategori</th>
+                                <th>Peserta</th>
+                                <th>Device</th>
+                                <th width="10%">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelKode"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- Modal Peringatan -->
+        <div class="modal fade" id="modalPeringatan" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            Peringatan
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <p id="isiPeringatan" class="mb-0"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            tampilkanKode();
+        });
+
+        function generateKode() {
+            let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
+
+            const kodeBaru = {
+                kode: "SRB-" + Math.random().toString(36).substring(2, 8).toUpperCase(),
+                status: "Belum Dipakai",
+                deviceId: "-",
+                kategori: "-",
+                peserta: "-"
+            };
+
+            kodeVoting.push(kodeBaru);
+            localStorage.setItem("kodeVoting", JSON.stringify(kodeVoting));
+
+            tampilkanKode();
+        }
+
+        function tampilkanKode() {
+            const tabel = document.getElementById("tabelKode");
+            tabel.innerHTML = "";
+
+            let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
+
+            if (kodeVoting.length === 0) {
+                tabel.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center text-muted">
+                    Belum ada kode voting
+                </td>
+            </tr>
+        `;
+                return;
+            }
+
+            kodeVoting.forEach((item, index) => {
+                tabel.innerHTML += `
+            <tr>
+                <td class="text-center">${index + 1}</td>
+                <td><strong>${item.kode}</strong></td>
+                <td class="text-center">
+                    ${item.status === "Belum Dipakai"
+                        ? '<span class="badge bg-success">Belum Dipakai</span>'
+                        : '<span class="badge bg-danger">Sudah Dipakai</span>'}
+                </td>
+                <td>${item.kategori || "-"}</td>
+                <td>${item.peserta || "-"}</td>
+                <td class="text-center">${item.deviceId}</td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-danger" onclick="hapusKode(${index})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+            });
+        }
+
+        function hapusKode(index) {
+            let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
+            kodeVoting.splice(index, 1);
+            localStorage.setItem("kodeVoting", JSON.stringify(kodeVoting));
+            tampilkanKode();
+        }
+
+        /* ================================
+           SIMULASI VALIDASI 1 DEVICE 1 VOTE
+           ================================ */
+
+        function gunakanKode(kodeInput, kategoriDipilih, pesertaDipilih) {
+
+                let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
+
+                // Ambil / buat device ID
+                let deviceId = localStorage.getItem("deviceId");
+                if (!deviceId) {
+                    deviceId = "DEV-" + Math.random().toString(36).substring(2, 10);
+                    localStorage.setItem("deviceId", deviceId);
+                }
+
+                // 🚫 CEK: Apakah device sudah pernah voting
+                const deviceSudahVote = kodeVoting.some(k => k.deviceId === deviceId);
+
+                if (deviceSudahVote) {
+                    tampilkanPeringatan("Device ini sudah melakukan voting. Anda tidak dapat vote lebih dari satu kali.");
+                    return false;
+                }
+
+                // Cari kode
+                const index = kodeVoting.findIndex(k => k.kode === kodeInput);
+
+                if (index === -1) {
+                    tampilkanPeringatan("Kode tidak valid!");
+                    return false;
+                }
+
+                if (kodeVoting[index].status === "Sudah Dipakai") {
+                    tampilkanPeringatan("Kode sudah digunakan!");
+                    return false;
+                }
+
+                // ✅ Simpan vote
+                kodeVoting[index].status = "Sudah Dipakai";
+                kodeVoting[index].deviceId = deviceId;
+                kodeVoting[index].kategori = kategoriDipilih;
+                kodeVoting[index].peserta = pesertaDipilih;
+                kodeVoting[index].tanggal = new Date().toISOString();
+
+                localStorage.setItem("kodeVoting", JSON.stringify(kodeVoting));
+
+                // Modal sukses (optional bisa dibuat hijau)
+                tampilkanPeringatan("Voting berhasil! Terima kasih telah berpartisipasi.");
+
+                tampilkanKode();
+                return true;
+            }
+
+        function cetakKode() {
+            let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
+
+            let daftarKode = kodeVoting
+                .filter(k => k.status !== "Sudah Dipakai")
+                .map(k => k.kode);
+
+            if (daftarKode.length === 0) {
+                alert("Tidak ada kode yang bisa dicetak!");
+                return;
+            }
+
+            let voucherHTML = "";
+
+            daftarKode.forEach(kode => {
+                voucherHTML += `
+        <div class="voucher">
+            <div class="ornament">☪</div>
+
+            <div class="voucher-header">
+                SERBU RAMADHAN
+            </div>
+
+            <div class="voucher-body">
+                <div class="label">KODE VOTING</div>
+                <div class="kode">${kode}</div>
+            </div>
+
+            <div class="voucher-footer">
+                Gunakan kode ini untuk memberikan suara terbaikmu 🌙
+            </div>
+        </div>
+        `;
+            });
+
+            const win = window.open("", "", "width=1200,height=900");
+            win.document.write(`
+    <html>
+    <head>
+        <title>Voucher Kode Voting</title>
+        <style>
+            body {
+                font-family: 'Poppins', sans-serif;
+                background: #f3f3f3;
+                padding: 30px;
+            }
+
+            .container-voucher {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+
+            .voucher {
+                width: 270px;
+                padding: 20px;
+                border-radius: 18px;
+                background: linear-gradient(135deg, #5f0f99, #8e2de2);
+                color: white;
+                position: relative;
+                overflow: hidden;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                text-align: center;
+            }
+
+            /* Aksen Pink Glow */
+            .voucher::before {
+                content: "";
+                position: absolute;
+                top: -50px;
+                right: -50px;
+                width: 150px;
+                height: 150px;
+                background: radial-gradient(circle, #ff4fd8, transparent 70%);
+                opacity: 0.4;
+            }
+
+            .voucher::after {
+                content: "";
+                position: absolute;
+                bottom: -50px;
+                left: -50px;
+                width: 150px;
+                height: 150px;
+                background: radial-gradient(circle, #ff80ec, transparent 70%);
+                opacity: 0.4;
+            }
+
+            .ornament {
+                font-size: 26px;
+                opacity: 0.8;
+                margin-bottom: 8px;
+            }
+
+            .voucher-header {
+                font-size: 15px;
+                font-weight: 600;
+                letter-spacing: 1px;
+                margin-bottom: 10px;
+                color: #ffd6ff;
+            }
+
+            .label {
+                font-size: 12px;
+                opacity: 0.9;
+            }
+
+            .kode {
+                font-size: 20px;
+                font-weight: bold;
+                margin: 10px 0;
+                letter-spacing: 3px;
+                padding: 8px;
+                background: rgba(255,255,255,0.15);
+                border-radius: 8px;
+            }
+
+            .voucher-footer {
+                font-size: 11px;
+                opacity: 0.85;
+                margin-top: 8px;
+            }
+
+            @media print {
+                body {
+                    background: white;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container-voucher">
+            ${voucherHTML}
+        </div>
+    </body>
+    </html>
+    `);
+
+            win.document.close();
+            win.focus();
+            win.print();
+        }
+
+        function downloadVoucherPDF() {
+            let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
+
+            let daftarKode = kodeVoting
+                .filter(k => k.status !== "Sudah Dipakai")
+                .map(k => k.kode);
+
+            if (daftarKode.length === 0) {
+                alert("Tidak ada kode yang tersedia!");
+                return;
+            }
+
+            let container = document.createElement("div");
+
+            container.innerHTML = `
+        <div style="
+            width:210mm;
+            min-height:297mm;
+            padding:15mm;
+            box-sizing:border-box;
+            font-family:Poppins, sans-serif;
+        ">
+
+            <div style="
+                display:grid;
+                grid-template-columns: repeat(3, 60mm);
+                gap:10mm;
+                justify-content:center;
+            ">
+
+                ${daftarKode.map(kode => `
+                    <div style="
+                        width:60mm;
+                        height:40mm;
+                        border:2px dashed #999;
+                        border-radius:8px;
+                        padding:6mm;
+                        box-sizing:border-box;
+                        background:linear-gradient(135deg,#5f0f99,#8e2de2);
+                        color:white;
+                        position:relative;
+                        display:flex;
+                        flex-direction:column;
+                        justify-content:center;
+                        align-items:center;
+                        text-align:center;
+                    ">
+
+                        <!-- Ornamen -->
+                        <div style="
+                            position:absolute;
+                            top:4mm;
+                            right:6mm;
+                            font-size:14px;
+                            opacity:0.3;
+                        ">
+                            🌙
+                        </div>
+
+                        <div style="
+                            font-size:9pt;
+                            font-weight:600;
+                            letter-spacing:1px;
+                            margin-bottom:3mm;
+                            color:#ffd6ff;
+                        ">
+                            SERBU RAMADHAN
+                        </div>
+
+                        <div style="
+                            font-size:8pt;
+                            opacity:0.9;
+                        ">
+                            KODE VOTING
+                        </div>
+
+                        <div style="
+                            font-size:12pt;
+                            font-weight:bold;
+                            letter-spacing:2px;
+                            margin:4mm 0;
+                            padding:2mm 4mm;
+                            background:rgba(255,255,255,0.15);
+                            border-radius:4px;
+                        ">
+                            ${kode}
+                        </div>
+
+                        <div style="
+                            font-size:7pt;
+                            opacity:0.8;
+                        ">
+                            Gunakan untuk 1x voting
+                        </div>
+
+                    </div>
+                `).join("")}
+
+            </div>
+        </div>
+    `;
+
+            const opt = {
+                margin: 0,
+                filename: 'Voucher_Kode_Voting_A4.pdf',
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: { scale: 3 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(container).save();
+        }
+
+        function tampilkanPeringatan(pesan) {
+                document.getElementById("isiPeringatan").innerText = pesan;
+                let modal = new bootstrap.Modal(document.getElementById('modalPeringatan'));
+                modal.show();
+            }
+
+    </script>
+</body>
+
+</html>

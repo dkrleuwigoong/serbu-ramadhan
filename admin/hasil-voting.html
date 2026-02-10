@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hasil Voting - Serbu Ramadhan</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+    <!-- Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f4f6f9;
+        }
+
+        .sidebar-link {
+            text-decoration: none;
+            color: #212529;
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .sidebar-link:hover {
+            background-color: #f1f1f1;
+        }
+
+        .offcanvas {
+            max-width: 250px;
+        }
+
+        .card-custom {
+            border-radius: 14px;
+        }
+
+        .progress {
+            height: 8px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-light bg-white shadow-sm px-3">
+        <div class="d-flex align-items-center">
+            <!-- Hamburger -->
+            <button class="btn" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
+                <i class="bi bi-list fs-4"></i>
+            </button>
+            <span class="navbar-brand mb-0 h5 ms-2">Serbu Ramadhan</span>
+        </div>
+
+        <!-- Right Side -->
+        <div class="d-flex align-items-center gap-3">
+            <a href="#" class="text-dark">
+                <i class="bi bi-person-circle fs-2"></i>
+            </a>
+            <a href="../login-admin.html" class="text-danger">
+                <i class="bi bi-box-arrow-right fs-2"></i>
+            </a>
+        </div>
+    </nav>
+
+    <!-- SIDEBAR -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Menu</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+
+        <div class="offcanvas-body">
+            <ul class="nav flex-column gap-2">
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link" href="dashboard.html">
+                        <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link" href="data-peserta.html">
+                        <i class="bi bi-people me-2"></i> Data Peserta
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link" href="kode-voting.html">
+                        <i class="bi bi-key me-2"></i> Kode Voting
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link active" href="hasil-voting.html">
+                        <i class="bi bi-bar-chart me-2"></i> Hasil Voting
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="container-fluid mt-4 px-3">
+        <!-- Total Vote -->
+        <div class="card shadow-sm card-custom mb-4">
+            <div class="card-body">
+                <h6 class="text-muted">Total Vote Masuk</h6>
+                <h3 id="totalVote">0</h3>
+            </div>
+        </div>
+
+        <!-- Rekap Hasil -->
+        <div id="hasilContainer"></div>
+
+    </div>
+
+    <!-- SCRIPT -->
+    <script>
+        let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
+
+        // Ambil hanya yang sudah dipakai
+        let dataVote = kodeVoting.filter(k => k.status === "Sudah Dipakai");
+
+        document.getElementById("totalVote").innerText = dataVote.length;
+
+        let hasilPerKategori = {};
+
+        dataVote.forEach(v => {
+            if (!hasilPerKategori[v.kategori]) {
+                hasilPerKategori[v.kategori] = {};
+            }
+
+            if (!hasilPerKategori[v.kategori][v.peserta]) {
+                hasilPerKategori[v.kategori][v.peserta] = 0;
+            }
+
+            hasilPerKategori[v.kategori][v.peserta]++;
+        });
+
+        const hasilContainer = document.getElementById("hasilContainer");
+
+        Object.keys(hasilPerKategori).forEach(kategori => {
+
+            let totalKategori = Object.values(hasilPerKategori[kategori])
+                .reduce((a, b) => a + b, 0);
+
+            let html = `
+                <div class="card shadow-sm card-custom mb-4">
+                    <div class="card-body">
+                        <h5 class="mb-3">
+                            <i class="bi bi-award me-2 text-primary"></i>
+                            ${kategori}
+                        </h5>
+            `;
+
+            Object.keys(hasilPerKategori[kategori]).forEach(peserta => {
+
+                let jumlah = hasilPerKategori[kategori][peserta];
+                let persen = ((jumlah / totalKategori) * 100).toFixed(1);
+
+                html += `
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>${peserta}</span>
+                            <span class="fw-semibold">${jumlah} suara (${persen}%)</span>
+                        </div>
+                        <div class="progress mt-1">
+                            <div class="progress-bar bg-primary" 
+                                style="width: ${persen}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div></div>`;
+
+            hasilContainer.innerHTML += html;
+        });
+
+        function logout() {
+            localStorage.removeItem("isAdminLogin");
+            window.location.href = "../login-admin.html";
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

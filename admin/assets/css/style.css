@@ -1,0 +1,189 @@
+body {
+  font-family: "Poppins", sans-serif;
+}
+
+.table-custom-small {
+  width: auto !important;
+}
+
+/* ===== TABLE PROFESSIONAL STYLE ===== */
+
+.table-voting {
+  font-size: 12px;
+  border-color: #e9ecef;
+}
+
+.table-voting th {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 6px;
+  background-color: #f8f9fa;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.table-voting td {
+  padding: 6px 6px;
+  vertical-align: middle;
+}
+
+.table-voting tbody tr:hover {
+  background-color: #f1f3f5;
+  transition: 0.2s;
+}
+
+/* Badge lebih kecil */
+.badge {
+  font-size: 10px;
+  padding: 5px 8px;
+  border-radius: 20px;
+}
+
+/* Tombol kecil dan clean */
+.table-voting .btn-sm {
+  padding: 4px 6px;
+  font-size: 11px;
+}
+
+/* Card lebih clean */
+.card {
+  border-radius: 12px;
+}
+
+.dashboard-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 25px;
+  border-radius: 18px;
+  color: white;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.dashboard-card h6 {
+  margin: 0;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.dashboard-card h2 {
+  margin: 5px 0 0;
+  font-weight: 700;
+  font-size: 28px;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+}
+
+/* Icon */
+.card-icon {
+  font-size: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 15px;
+  border-radius: 15px;
+}
+
+/* Warna Gradasi */
+.card-peserta {
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+}
+
+.card-vote {
+  background: linear-gradient(135deg, #ff512f, #dd2476);
+}
+
+.card-kode {
+  background: linear-gradient(135deg, #11998e, #38ef7d);
+}
+
+.sidebar-link {
+  text-decoration: none;
+  color: #212529;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.sidebar-link:hover {
+  background-color: #f1f1f1;
+}
+
+.offcanvas {
+  max-width: 250px;
+}
+
+.voting-chart-card {
+  background: white;
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+  transition: 0.3s ease;
+}
+
+.voting-chart-card:hover {
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.chart-header h5 {
+  font-weight: 600;
+}
+
+.chart-icon {
+  font-size: 28px;
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  color: white;
+  padding: 10px 14px;
+  border-radius: 12px;
+}
+
+.chart-body {
+  background: #f9f9fb;
+  padding: 20px;
+  border-radius: 15px;
+}
+
+canvas {
+  max-height: 350px;
+}
+
+.kategori-chart-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+  transition: 0.3s ease;
+}
+
+.kategori-chart-card:hover {
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.12);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.chart-icon {
+  font-size: 26px;
+  background: linear-gradient(135deg, #8e2de2, #ff4fd8);
+  color: white;
+  padding: 12px 14px;
+  border-radius: 14px;
+}
+
+.chart-body {
+  background: #f8f9fc;
+  padding: 25px;
+  border-radius: 15px;
+}

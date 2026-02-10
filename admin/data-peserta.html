@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Data Peserta - Serbu Ramadhan</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+
+    <style>
+        .sidebar-link {
+            text-decoration: none;
+            color: #212529;
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .sidebar-link:hover {
+            background-color: #f1f1f1;
+        }
+
+        .offcanvas {
+            max-width: 250px;
+        }
+
+        .table-custom-small th,
+        .table-custom-small td {
+            font-size: 12px;
+            padding: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-light bg-white shadow-sm px-3">
+        <div class="d-flex align-items-center">
+            <!-- Hamburger -->
+            <button class="btn" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
+                <i class="bi bi-list fs-4"></i>
+            </button>
+            <span class="navbar-brand mb-0 h5 ms-2">Serbu Ramadhan</span>
+        </div>
+
+        <!-- Right Side -->
+        <div class="d-flex align-items-center gap-3">
+            <a href="#" class="text-secondary">
+                <i class="bi bi-person-circle fs-2"></i>
+            </a>
+            <a href="../login-admin.html" class="text-secondary">
+                <i class="bi bi-box-arrow-right fs-2"></i>
+            </a>
+        </div>
+    </nav>
+
+    <!-- SIDEBAR OFFCANVAS -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Menu</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+
+        <div class="offcanvas-body">
+            <ul class="nav flex-column gap-2">
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link" href="dashboard.html">
+                        <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link active bg-light" href="data-peserta.html">
+                        <i class="bi bi-people me-2"></i> Data Peserta
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link" href="kode-voting.html">
+                        <i class="bi bi-key me-2"></i> Kode Voting
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sidebar-link" href="hasil-voting.html">
+                        <i class="bi bi-bar-chart me-2"></i> Hasil Voting
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="container-fluid mt-4 px-3">
+
+        <!-- Header + Button -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Daftar Peserta</h4>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-success" onclick="downloadPDF()">
+                    <i class="bi bi-download me-1"></i> Unduh PDF
+                </button>
+
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahPeserta">
+                    <i class="bi bi-plus-circle me-1"></i> Tambah Peserta
+                </button>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle table-custom-small text-nowrap">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th width="5%">No</th>
+                                <th>Nomor Peserta</th>
+                                <th>Nama Peserta</th>
+                                <th>Jenis Kelamin</th>
+                                <th>Tempat Lahir</th>
+                                <th>Tanggal Lahir</th>
+                                <th>Alamat</th>
+                                <th>Golongan</th>
+                                <th>Pangkalan</th>
+                                <th>Kwarran</th>
+                                <th>Nama Orang Tua</th>
+                                <th>No. HP</th>
+                                <th>Kategori</th>
+                                <th width="15%" class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelPeserta">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!-- MODAL TAMBAH PESERTA -->
+    <div class="modal fade" id="modalTambahPeserta" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-person-plus me-2"></i>Tambah Peserta
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="formPeserta">
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <label class="form-label">Nomor Peserta</label>
+                                <input type="text" class="form-control" id="nomor" readonly>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Nama Peserta</label>
+                                <input type="text" class="form-control" name="nama">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Jenis Kelamin</label>
+                                <select class="form-select" name="jk" required>
+                                    <option value="">Pilih</option>
+                                    <option>Laki-laki</option>
+                                    <option>Perempuan</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Tempat Lahir</label>
+                                <input type="text" class="form-control" name="tempat" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Tanggal Lahir</label>
+                                <input type="date" class="form-control" name="tanggal" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Golongan</label>
+                                <select class="form-select" name="golongan">
+                                    <option value="">Pilih</option>
+                                    <option value="Siaga">Siaga</option>
+                                    <option value="Penggalang">Penggalang</option>
+                                    <option value="Penegak">Penegak</option>
+                                    <option value="Pandega">Pandega</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Pangkalan</label>
+                                <input type="text" class="form-control" name="pangkalan">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Kwarran</label>
+                                <input type="text" class="form-control" name="kwarran">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Nama Orang Tua</label>
+                                <input type="text" class="form-control" name="ortu">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">No. HP</label>
+                                <input type="text" class="form-control" name="hp">
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Alamat</label>
+                                <textarea class="form-control" rows="2" name="alamat"></textarea>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Kategori</label>
+                                <select id="kategori" class="form-select">
+                                    <option value="">Pilih Kategori</option>
+                                    <option value="Pidato">Pidato</option>
+                                    <option value="Kaligrafi">Kaligrafi</option>
+                                    <option value="Mewarnai">Mewarnai</option>
+                                    <option value="Vlog">Vlog</option>
+                                    <option value="Poster">Poster</option>
+                                </select>
+
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" form="formPeserta" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i> Simpan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script>
+        let editIndex = null;
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const form = document.getElementById("formPeserta");
+            const tabel = document.getElementById("tabelPeserta");
+
+            // Ambil data dari LocalStorage saat halaman dibuka
+            tampilkanData();
+
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+
+                const data = {
+                    nomor: form.nomor.value,
+                    nama: form.nama.value,
+                    jk: form.jk.value,
+                    tempat: form.tempat.value,
+                    tanggal: form.tanggal.value,
+                    alamat: form.alamat.value,
+                    golongan: form.golongan.value,
+                    pangkalan: form.pangkalan.value,
+                    kwarran: form.kwarran.value,
+                    ortu: form.ortu.value,
+                    hp: form.hp.value,
+                    kategori: form.kategori.value
+                };
+
+                let peserta = JSON.parse(localStorage.getItem("peserta")) || [];
+
+                if (editIndex !== null) {
+                    peserta[editIndex] = data;
+                    editIndex = null;
+                } else {
+                    peserta.push(data);
+                }
+
+                localStorage.setItem("peserta", JSON.stringify(peserta));
+
+                form.reset();
+                bootstrap.Modal.getInstance(document.getElementById('modalTambahPeserta')).hide();
+                tampilkanData();
+            });
+
+            window.editData = function (index) {
+                let peserta = JSON.parse(localStorage.getItem("peserta")) || [];
+                let data = peserta[index];
+
+                form.nomor.value = data.nomor;
+                form.nama.value = data.nama;
+                form.jk.value = data.jk;
+                form.tempat.value = data.tempat;
+                form.tanggal.value = data.tanggal;
+                form.alamat.value = data.alamat;
+                form.golongan.value = data.golongan;
+                form.pangkalan.value = data.pangkalan;
+                form.kwarran.value = data.kwarran;
+                form.ortu.value = data.ortu;
+                form.hp.value = data.hp;
+                form.kategori.value = data.kategori;
+
+                editIndex = index;
+
+                const modal = new bootstrap.Modal(document.getElementById('modalTambahPeserta'));
+                modal.show();
+            };
+
+            function tampilkanData() {
+                tabel.innerHTML = "";
+                let peserta = JSON.parse(localStorage.getItem("peserta")) || [];
+
+                if (peserta.length === 0) {
+                    tabel.innerHTML = `
+                    <tr>
+                        <td colspan="14" class="text-center text-muted">Belum ada data</td>
+                    </tr>
+                `;
+                    return;
+                }
+
+                peserta.forEach((item, index) => {
+                    tabel.innerHTML += `
+                    <tr>
+                        <td class="text-center">${index + 1}</td>
+                        <td>${item.nomor}</td>
+                        <td>${item.nama}</td>
+                        <td>${item.jk}</td>
+                        <td>${item.tempat}</td>
+                        <td>${item.tanggal}</td>
+                        <td>${item.alamat}</td>
+                        <td>${item.golongan}</td>
+                        <td>${item.pangkalan}</td>
+                        <td>${item.kwarran}</td>
+                        <td>${item.ortu}</td>
+                        <td>${item.hp}</td>
+                        <td>${item.kategori}</td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-warning me-1" onclick="editData(${index})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="hapusData(${index})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                });
+            }
+
+            window.hapusData = function (index) {
+                let peserta = JSON.parse(localStorage.getItem("peserta")) || [];
+                peserta.splice(index, 1);
+                localStorage.setItem("peserta", JSON.stringify(peserta));
+                tampilkanData();
+            }
+
+        });
+
+        // Mapping Nama Kategori ke Kode
+        const kategoriKodeMap = {
+            "Pidato": "PTD",
+            "Kaligrafi": "KLG",
+            "Mewarnai": "MWN",
+            "Vlog": "VLG",
+            "Poster": "PST"
+        };
+
+        // Counter per kode
+        let counters = {
+            PTD: 1,
+            KLG: 1,
+            MWN: 1,
+            VLG: 1,
+            PST: 1
+        };
+
+        document.getElementById("kategori").addEventListener("change", function () {
+
+            let namaKategori = this.value;
+
+            if (!namaKategori) {
+                document.getElementById("nomor").value = "";
+                return;
+            }
+
+            let kode = kategoriKodeMap[namaKategori];
+
+            let nomorUrut = String(counters[kode]).padStart(3, '0');
+
+            document.getElementById("nomor").value = `${kode}-${nomorUrut}`;
+
+            counters[kode]++;
+        });
+
+
+        async function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+
+            const doc = new jsPDF("landscape", "mm", "a4");
+
+            let peserta = JSON.parse(localStorage.getItem("peserta")) || [];
+
+            if (peserta.length === 0) {
+                alert("Data peserta masih kosong!");
+                return;
+            }
+
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+
+            // ================= HEADER =================
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(18);
+            doc.text("LAPORAN DATA PESERTA", pageWidth / 2, 20, { align: "center" });
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(12);
+            doc.text("Serbu Ramadhan", pageWidth / 2, 27, { align: "center" });
+
+            // ================= DATA TABEL =================
+            let tableData = peserta.map((p, index) => [
+                index + 1,
+                p.nomor,
+                p.nama,
+                p.golongan,
+                p.pangkalan,
+                p.kwarran,
+                p.kategori,
+                "" // kolom tanda tangan kosong
+            ]);
+
+            const tableWidth = 260;
+            const marginLeft = (pageWidth - tableWidth) / 2;
+
+            doc.autoTable({
+                startY: 35,
+                margin: { left: marginLeft },
+                tableWidth: tableWidth,
+                head: [[
+                    "No",
+                    "Nomor Peserta",
+                    "Nama Peserta",
+                    "Golongan",
+                    "Pangkalan",
+                    "Kwarran",
+                    "Kategori",
+                    "Tanda Tangan"
+                ]],
+                body: tableData,
+                theme: "grid",
+                styles: {
+                    fontSize: 10,
+                    cellPadding: 4,
+                    lineColor: [0, 0, 0],
+                    lineWidth: 0.3,
+                    minCellHeight: 12 // tinggi supaya bisa tanda tangan
+                },
+                headStyles: {
+                    fontStyle: "bold",
+                    halign: "center",
+                    fillColor: false,
+                    textColor: 0,
+                    lineColor: [0, 0, 0]
+                },
+                columnStyles: {
+                    0: { halign: "center", cellWidth: 15 },
+                    1: { cellWidth: 40 },
+                    2: { cellWidth: 35 },
+                    3: { cellWidth: 25 },
+                    4: { cellWidth: 35 },
+                    5: { cellWidth: 35 },
+                    6: { cellWidth: 30 },
+                    7: { cellWidth: 40 } // kolom tanda tangan lebih lebar
+                }
+            });
+
+            // ================= TANDA TANGAN PANITIA =================
+            let finalY = doc.lastAutoTable.finalY + 20;
+
+            const lokasiTanggal = "Garut, " + new Date().toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric"
+            });
+
+            const jabatan = "Panitia Serbu Ramadhan";
+
+            doc.setFontSize(11);
+
+            const rightX = pageWidth - 20;
+
+            doc.text(lokasiTanggal, rightX, finalY, { align: "right" });
+            doc.text(jabatan, rightX, finalY + 7, { align: "right" });
+            doc.text("( _____________________ )", rightX, finalY + 38, { align: "right" });
+
+            // ================= FOOTER =================
+            doc.setFontSize(9);
+            doc.text(
+                "Dicetak pada: " + new Date().toLocaleString(),
+                15,
+                pageHeight - 10
+            );
+
+            doc.save("Laporan_Data_Peserta_Serbu_Ramadhan.pdf");
+        }
+
+    </script>
+</body>
+
+</html>
