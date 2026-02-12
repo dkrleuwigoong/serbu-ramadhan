@@ -102,6 +102,14 @@
         .forgot-link:hover {
             text-decoration: underline;
         }
+
+        .btn-daftar {
+            background: linear-gradient(135deg, #43a047, #2e7d32);
+        }
+
+        .btn-daftar:hover {
+            transform: translateY(-3px);
+        }
     </style>
 </head>
 
@@ -124,6 +132,11 @@
             PEMILIH
         </button>
 
+        <button class="btn-option btn-daftar" onclick="goDaftar()">
+            <i class="bi bi-person-plus-fill"></i>
+            PENDAFTARAN
+        </button>
+
     </div>
 
     <script>
@@ -134,8 +147,11 @@
         function goPemilih() {
             window.location.href = "login-voting.html";
         }
-    </script>
 
+        function goDaftar() {
+            window.location.href = "register.html"; // arahkan ke halaman pendaftaran
+        }
+    </script>
 </body>
 
 </html>
