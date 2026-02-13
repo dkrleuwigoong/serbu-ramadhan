@@ -12,7 +12,8 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            background: url("assets/img/background.png") no-repeat center center;
+            background-size: cover;
             padding: 30px 0;
         }
 
@@ -140,42 +141,82 @@
 
                 </div>
 
-                <button type="submit" class="btn btn-daftar w-100 mt-3">
+                <button type="button" class="btn btn-daftar w-100 mt-3" id="btnSubmit">
                     Daftar Sekarang
                 </button>
             </form>
         </div>
     </div>
+    <!-- Modal Konfirmasi -->
+    <div class="modal fade" id="confirmModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Konfirmasi Pendaftaran</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Apakah Anda yakin ingin menyimpan data pendaftaran ini?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-success" id="confirmSave">Ya, Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script>
-        document.getElementById("formRegister").addEventListener("submit", function (e) {
-            e.preventDefault();
+        const form = document.getElementById("formRegister");
+        const btnSubmit = document.getElementById("btnSubmit");
+        const confirmModal = new bootstrap.Modal(document.getElementById("confirmModal"));
+        const confirmSave = document.getElementById("confirmSave");
+
+        // Saat klik tombol daftar → tampilkan modal
+        btnSubmit.addEventListener("click", function () {
+            if (form.checkValidity()) {
+                confirmModal.show();
+            } else {
+                form.reportValidity();
+            }
+        });
+
+        // Saat klik Ya, Simpan
+        confirmSave.addEventListener("click", function () {
 
             const pesertaBaru = {
                 id: Date.now(),
-                nomorPeserta: document.getElementById("nomorPeserta").value,
-                namaPeserta: document.getElementById("namaPeserta").value,
-                jenisKelamin: document.getElementById("jenisKelamin").value,
-                tempatLahir: document.getElementById("tempatLahir").value,
-                tanggalLahir: document.getElementById("tanggalLahir").value,
+                nomor: document.getElementById("nomor").value,
+                nama: document.getElementById("nama").value,
+                jk: document.getElementById("jk").value,
+                tempat: document.getElementById("tempat").value,
+                tanggal: document.getElementById("tanggal").value,
                 alamat: document.getElementById("alamat").value,
                 golongan: document.getElementById("golongan").value,
                 pangkalan: document.getElementById("pangkalan").value,
                 kwarran: document.getElementById("kwarran").value,
-                namaOrtu: document.getElementById("namaOrtu").value,
-                noHp: document.getElementById("noHp").value,
+                ortu: document.getElementById("namaOrtu").value,
+                hp: document.getElementById("noHp").value,
                 kategori: document.getElementById("kategori").value
             };
 
             let peserta = JSON.parse(localStorage.getItem("peserta")) || [];
-
             peserta.push(pesertaBaru);
-
             localStorage.setItem("peserta", JSON.stringify(peserta));
 
+            confirmModal.hide();
+
             alert("Pendaftaran berhasil disimpan!");
-            document.getElementById("formRegister").reset();
+
+            form.reset();
+            document.getElementById("nomorPeserta").value = "";
         });
+
 
         // Mapping Nama Kategori ke Kode
         const kategoriKodeMap = {
@@ -207,12 +248,9 @@
 
             document.getElementById("nomorPeserta").value = kode + "-" + nomorFormat;
         }
-
         // Generate otomatis saat kategori dipilih
         document.getElementById("kategori").addEventListener("change", generateNomorPeserta);
-
     </script>
-
 </body>
 
 </html>

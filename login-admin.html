@@ -360,21 +360,23 @@
 
         });
 
-        /* =======================
-           TOGGLE PASSWORD LOGIN
-        ======================= */
-        function togglePassword(btn, inputId) {
-            const input = document.getElementById(inputId);
-            const icon = btn.querySelector("i");
+        function togglePassword() {
+            const input = document.getElementById("passwordInput");
+            const icon = document.querySelector(".toggle-password");
+
+            if (!input || !icon) return;
 
             if (input.type === "password") {
                 input.type = "text";
-                icon.classList.replace("bi-eye-slash-fill", "bi-eye-fill");
+                icon.classList.remove("bi-eye-slash-fill");
+                icon.classList.add("bi-eye-fill");
             } else {
                 input.type = "password";
-                icon.classList.replace("bi-eye-fill", "bi-eye-slash-fill");
+                icon.classList.remove("bi-eye-fill");
+                icon.classList.add("bi-eye-slash-fill");
             }
         }
+
 
         /* =======================
            TOGGLE PASSWORD REGISTER
@@ -392,11 +394,8 @@
             }
         }
 
-        /* =======================
-           BACK BUTTON
-        ======================= */
         function goBack() {
-            window.history.back();
+            window.location.href = "index.html";
         }
     </script>
 
