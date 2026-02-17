@@ -322,42 +322,6 @@
                 });
             }
 
-            /* =======================
-               REGISTER ADMIN
-            ======================= */
-            if (registerForm) {
-                registerForm.addEventListener("submit", function (e) {
-                    e.preventDefault();
-
-                    const nama = this.querySelector("#regNama").value.trim();
-                    const email = this.querySelector("#regEmail").value.trim().toLowerCase();
-                    const password = this.querySelector("#regPassword").value;
-                    const confirm = this.querySelector("#regConfirm").value;
-
-                    if (password !== confirm) {
-                        alert("Konfirmasi password tidak cocok!");
-                        return;
-                    }
-
-                    let akunAdmin = JSON.parse(localStorage.getItem("akunAdmin")) || [];
-
-                    if (akunAdmin.some(a => a.email === email)) {
-                        alert("Email sudah terdaftar!");
-                        return;
-                    }
-
-                    akunAdmin.push({ nama, email, password });
-                    localStorage.setItem("akunAdmin", JSON.stringify(akunAdmin));
-
-                    alert("Akun berhasil didaftarkan!");
-                    this.reset();
-
-                    const modalEl = document.getElementById("modalDaftarAkun");
-                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
-                    if (modalInstance) modalInstance.hide();
-                });
-            }
-
         });
 
         function togglePassword() {
@@ -377,26 +341,79 @@
             }
         }
 
-
-        /* =======================
-           TOGGLE PASSWORD REGISTER
-        ======================= */
-        function toggleRegPassword(btn, inputId) {
-            const input = document.getElementById(inputId);
-            const icon = btn.querySelector("i");
-
-            if (input.type === "password") {
-                input.type = "text";
-                icon.classList.replace("bi-eye-slash-fill", "bi-eye-fill");
-            } else {
-                input.type = "password";
-                icon.classList.replace("bi-eye-fill", "bi-eye-slash-fill");
-            }
-        }
-
         function goBack() {
             window.location.href = "index.html";
         }
+
+        /* =========================
+       TOGGLE PASSWORD
+    ========================= */
+        function toggleRegPassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector("i");
+
+            if (!input || !icon) return;
+
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove("bi-eye-slash-fill");
+                icon.classList.add("bi-eye-fill");
+            } else {
+                input.type = "password";
+                icon.classList.remove("bi-eye-fill");
+                icon.classList.add("bi-eye-slash-fill");
+            }
+        }
+
+
+        /* =========================
+           REGISTER ADMIN
+        ========================= */
+        document.getElementById("registerForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const nama = this.querySelector("input[type='text']").value.trim();
+            const email = this.querySelector("input[type='email']").value.trim();
+            const password = document.getElementById("regPassword").value;
+            const confirmPassword = document.getElementById("regConfirmPassword").value;
+
+            // Validasi password sama
+            if (password !== confirmPassword) {
+                alert("Konfirmasi password tidak sama!");
+                return;
+            }
+
+            let akunAdmin = JSON.parse(localStorage.getItem("akunAdmin")) || [];
+
+            // Cek email sudah terdaftar atau belum
+            const emailSudahAda = akunAdmin.some(admin => admin.email === email);
+
+            if (emailSudahAda) {
+                alert("Email sudah terdaftar!");
+                return;
+            }
+
+            const adminBaru = {
+                id: Date.now(),
+                nama: nama,
+                email: email,
+                password: password
+            };
+
+            akunAdmin.push(adminBaru);
+
+            localStorage.setItem("akunAdmin", JSON.stringify(akunAdmin));
+
+            alert("Akun admin berhasil didaftarkan!");
+
+            // Reset form
+            this.reset();
+
+            // Tutup modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById("modalDaftarAkun"));
+            modal.hide();
+        });
+
     </script>
 
 </body>

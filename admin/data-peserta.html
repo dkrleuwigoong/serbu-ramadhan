@@ -37,6 +37,11 @@
             font-size: 12px;
             padding: 6px;
         }
+
+        .table-custom-small {
+            width: 100% !important;
+            table-layout: auto;
+        }
     </style>
 </head>
 
@@ -104,7 +109,7 @@
 
             <div class="d-flex gap-1">
                 <button class="btn btn-success btn-sm" onclick="downloadPDF()">
-                    <i class="bi bi-download me-1"></i> PDF
+                    <i class="bi bi-download me-1"></i> Unduh
                 </button>
 
                 <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalTambahPeserta">
@@ -118,21 +123,15 @@
         <div class="card shadow-sm">
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover align-middle table-custom-small text-nowrap">
+                    <table class="table table-bordered table-hover align-middle table-custom-small w-100">
                         <thead class="table-light text-center">
                             <tr>
                                 <th width="5%">No</th>
                                 <th>Nomor Peserta</th>
                                 <th>Nama Peserta</th>
                                 <th>Jenis Kelamin</th>
-                                <th>Tempat Lahir</th>
-                                <th>Tanggal Lahir</th>
-                                <th>Alamat</th>
-                                <th>Golongan</th>
                                 <th>Pangkalan</th>
                                 <th>Kwarran</th>
-                                <th>Nama Orang Tua</th>
-                                <th>No. HP</th>
                                 <th>Kategori</th>
                                 <th width="15%" class="text-center">Aksi</th>
                             </tr>
@@ -181,27 +180,6 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label">Tempat Lahir</label>
-                                <input type="text" class="form-control" name="tempat" required>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">Tanggal Lahir</label>
-                                <input type="date" class="form-control" name="tanggal" required>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">Golongan</label>
-                                <select class="form-select" name="golongan">
-                                    <option value="">Pilih</option>
-                                    <option value="Siaga">Siaga</option>
-                                    <option value="Penggalang">Penggalang</option>
-                                    <option value="Penegak">Penegak</option>
-                                    <option value="Pandega">Pandega</option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-6">
                                 <label class="form-label">Pangkalan</label>
                                 <input type="text" class="form-control" name="pangkalan">
                             </div>
@@ -212,27 +190,12 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label">Nama Orang Tua</label>
-                                <input type="text" class="form-control" name="ortu">
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">No. HP</label>
-                                <input type="text" class="form-control" name="hp">
-                            </div>
-
-                            <div class="col-12">
-                                <label class="form-label">Alamat</label>
-                                <textarea class="form-control" rows="2" name="alamat"></textarea>
-                            </div>
-
-                            <div class="col-md-6">
                                 <label class="form-label">Kategori</label>
                                 <select id="kategori" class="form-select">
                                     <option value="">Pilih Kategori</option>
                                     <option value="Pidato">Pidato</option>
                                     <option value="Kaligrafi">Kaligrafi</option>
-                                    <option value="Mewarnai">Mewarnai</option>
+                                    <option value="Nasyid">Nasyid</option>
                                     <option value="Vlog">Vlog</option>
                                     <option value="Poster">Poster</option>
                                 </select>
@@ -273,14 +236,8 @@
                     nomor: form.nomor.value,
                     nama: form.nama.value,
                     jk: form.jk.value,
-                    tempat: form.tempat.value,
-                    tanggal: form.tanggal.value,
-                    alamat: form.alamat.value,
-                    golongan: form.golongan.value,
                     pangkalan: form.pangkalan.value,
                     kwarran: form.kwarran.value,
-                    ortu: form.ortu.value,
-                    hp: form.hp.value,
                     kategori: form.kategori.value
                 };
 
@@ -307,14 +264,8 @@
                 form.nomor.value = data.nomor;
                 form.nama.value = data.nama;
                 form.jk.value = data.jk;
-                form.tempat.value = data.tempat;
-                form.tanggal.value = data.tanggal;
-                form.alamat.value = data.alamat;
-                form.golongan.value = data.golongan;
                 form.pangkalan.value = data.pangkalan;
                 form.kwarran.value = data.kwarran;
-                form.ortu.value = data.ortu;
-                form.hp.value = data.hp;
                 form.kategori.value = data.kategori;
 
                 editIndex = index;
@@ -343,14 +294,8 @@
                         <td>${item.nomor}</td>
                         <td>${item.nama}</td>
                         <td>${item.jk}</td>
-                        <td>${item.tempat}</td>
-                        <td>${item.tanggal}</td>
-                        <td>${item.alamat}</td>
-                        <td>${item.golongan}</td>
                         <td>${item.pangkalan}</td>
                         <td>${item.kwarran}</td>
-                        <td>${item.ortu}</td>
-                        <td>${item.hp}</td>
                         <td>${item.kategori}</td>
                         <td class="text-center">
                             <button class="btn btn-sm btn-warning me-1" onclick="editData(${index})">
@@ -429,36 +374,34 @@
             // ================= HEADER =================
             doc.setFont("helvetica", "bold");
             doc.setFontSize(18);
-            doc.text("LAPORAN DATA PESERTA", pageWidth / 2, 20, { align: "center" });
+            doc.text("DAFTAR PESERTA", pageWidth / 2, 20, { align: "center" });
 
             doc.setFont("helvetica", "normal");
             doc.setFontSize(12);
-            doc.text("Serbu Ramadhan", pageWidth / 2, 27, { align: "center" });
+            doc.text("SERBU RAMADAN 2026", pageWidth / 2, 27, { align: "center" });
 
             // ================= DATA TABEL =================
             let tableData = peserta.map((p, index) => [
                 index + 1,
                 p.nomor,
                 p.nama,
-                p.golongan,
                 p.pangkalan,
                 p.kwarran,
                 p.kategori,
                 "" // kolom tanda tangan kosong
             ]);
 
-            const tableWidth = 260;
-            const marginLeft = (pageWidth - tableWidth) / 2;
+            const marginSide = 20;
+            const tableWidth = pageWidth - (marginSide * 2);
 
             doc.autoTable({
                 startY: 35,
-                margin: { left: marginLeft },
+                margin: { left: marginSide, right: marginSide },
                 tableWidth: tableWidth,
                 head: [[
                     "No",
                     "Nomor Peserta",
                     "Nama Peserta",
-                    "Golongan",
                     "Pangkalan",
                     "Kwarran",
                     "Kategori",
@@ -467,11 +410,11 @@
                 body: tableData,
                 theme: "grid",
                 styles: {
-                    fontSize: 10,
-                    cellPadding: 4,
+                    fontSize: 8,
+                    cellPadding: 2,
                     lineColor: [0, 0, 0],
                     lineWidth: 0.3,
-                    minCellHeight: 12 // tinggi supaya bisa tanda tangan
+                    minCellHeight: 8
                 },
                 headStyles: {
                     fontStyle: "bold",
@@ -479,16 +422,6 @@
                     fillColor: false,
                     textColor: 0,
                     lineColor: [0, 0, 0]
-                },
-                columnStyles: {
-                    0: { halign: "center", cellWidth: 15 },
-                    1: { cellWidth: 40 },
-                    2: { cellWidth: 35 },
-                    3: { cellWidth: 25 },
-                    4: { cellWidth: 35 },
-                    5: { cellWidth: 35 },
-                    6: { cellWidth: 30 },
-                    7: { cellWidth: 40 } // kolom tanda tangan lebih lebar
                 }
             });
 
@@ -519,9 +452,8 @@
                 pageHeight - 10
             );
 
-            doc.save("Laporan_Data_Peserta_Serbu_Ramadhan.pdf");
+            doc.save("Daftar_Peserta_Serbu_Ramadhan_2026.pdf");
         }
-
     </script>
 </body>
 
