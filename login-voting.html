@@ -184,7 +184,6 @@
 
             form.addEventListener("submit", function (e) {
                 e.preventDefault();
-
                 pesan.innerText = "";
 
                 const kodeInput = document
@@ -199,7 +198,12 @@
 
                 let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
 
-                const index = kodeVoting.findIndex(k => k.kode === kodeInput);
+                const index = kodeVoting.findIndex(k => {
+                    if (typeof k === "string") {
+                        return k === kodeInput;
+                    }
+                    return k.kode === kodeInput;
+                });
 
                 if (index === -1) {
                     pesan.innerText = "Kode tidak ditemukan!";
@@ -211,14 +215,9 @@
                     return;
                 }
 
-                // set kode aktif
+                // simpan kode aktif saja (jangan ubah status dulu)
                 localStorage.setItem("kodeAktif", kodeInput);
 
-                // tandai kode sudah dipakai
-                kodeVoting[index].status = "Sudah Dipakai";
-                localStorage.setItem("kodeVoting", JSON.stringify(kodeVoting));
-
-                // pindah ke halaman voting
                 window.location.href = "voting.html";
             });
         });
