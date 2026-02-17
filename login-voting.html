@@ -177,6 +177,7 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+
             const form = document.getElementById("formLogin");
             const pesan = document.getElementById("pesan");
 
@@ -198,24 +199,35 @@
 
                 let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
 
-                const index = kodeVoting.findIndex(k => {
-                    if (typeof k === "string") {
-                        return k === kodeInput;
-                    }
-                    return k.kode === kodeInput;
-                });
+                // Ambil device & fingerprint
+                const deviceId = getOrCreateDeviceId();
+                const fingerprint = getDeviceFingerprint();
 
-                if (index === -1) {
+                // 🚫 CEK apakah device sudah pernah voting
+                const sudahVoting = kodeVoting.some(k =>
+                    k.deviceId === deviceId ||
+                    k.fingerprint === fingerprint
+                );
+
+                if (sudahVoting) {
+                    pesan.innerText = "Perangkat ini sudah melakukan voting dan tidak dapat login kembali.";
+                    return;
+                }
+
+                // Cari kode
+                const dataKode = kodeVoting.find(k => k.kode === kodeInput);
+
+                if (!dataKode) {
                     pesan.innerText = "Kode tidak ditemukan!";
                     return;
                 }
 
-                if (kodeVoting[index].status === "Sudah Dipakai") {
+                if (dataKode.status === "Sudah Dipakai") {
                     pesan.innerText = "Kode sudah digunakan!";
                     return;
                 }
 
-                // simpan kode aktif saja (jangan ubah status dulu)
+                // ✅ Simpan kode aktif (BELUM ubah status)
                 localStorage.setItem("kodeAktif", kodeInput);
 
                 window.location.href = "voting.html";

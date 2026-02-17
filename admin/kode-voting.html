@@ -161,22 +161,86 @@
             tampilkanKode();
         });
 
+        /* =====================================================
+           UTILITAS KEAMANAN
+        ===================================================== */
+
+        // Hash sederhana
+        function simpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = ((hash << 5) - hash) + str.charCodeAt(i);
+                hash |= 0;
+            }
+            return hash.toString();
+        }
+
+        // Fingerprint device
+        function getDeviceFingerprint() {
+            const data = [
+                navigator.userAgent,
+                navigator.language,
+                screen.width + "x" + screen.height,
+                Intl.DateTimeFormat().resolvedOptions().timeZone,
+                navigator.platform
+            ].join("||");
+
+            return simpleHash(data);
+        }
+
+        // Cookie helper
+        function getCookie(name) {
+            let value = "; " + document.cookie;
+            let parts = value.split("; " + name + "=");
+            if (parts.length === 2) return parts.pop().split(";").shift();
+        }
+
+        // Device ID generator (disimpan 3 tempat)
+        function getOrCreateDeviceId() {
+            let deviceId =
+                localStorage.getItem("deviceId") ||
+                sessionStorage.getItem("deviceId") ||
+                getCookie("deviceId");
+
+            if (!deviceId) {
+                deviceId = "DEV-" + Math.random().toString(36).substring(2, 12);
+                localStorage.setItem("deviceId", deviceId);
+                sessionStorage.setItem("deviceId", deviceId);
+                document.cookie = "deviceId=" + deviceId + "; path=/; max-age=31536000";
+            }
+
+            return deviceId;
+        }
+
+        /* =====================================================
+           GENERATE KODE
+        ===================================================== */
+
         function generateKode() {
             let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
 
-            const kodeBaru = {
-                kode: "SRB-" + Math.random().toString(36).substring(2, 8).toUpperCase(),
+            let kodeBaru;
+            do {
+                kodeBaru = Math.floor(10000 + Math.random() * 90000).toString();
+            } while (kodeVoting.some(k => k.kode === kodeBaru));
+
+            kodeVoting.push({
+                kode: kodeBaru,
                 status: "Belum Dipakai",
                 deviceId: "-",
+                fingerprint: "-",
                 kategori: "-",
-                peserta: "-"
-            };
+                peserta: "-",
+                tanggal: "-"
+            });
 
-            kodeVoting.push(kodeBaru);
             localStorage.setItem("kodeVoting", JSON.stringify(kodeVoting));
-
             tampilkanKode();
         }
+
+        /* =====================================================
+           TAMPILKAN KODE
+        ===================================================== */
 
         function tampilkanKode() {
             const tabel = document.getElementById("tabelKode");
@@ -195,60 +259,72 @@
                 return;
             }
 
+            const fragment = document.createDocumentFragment();
+
             kodeVoting.forEach((item, index) => {
-                tabel.innerHTML += `
-            <tr>
-                <td class="text-center">${index + 1}</td>
-                <td><strong>${item.kode}</strong></td>
-                <td class="text-center">
-                    ${item.status === "Belum Dipakai"
+                const tr = document.createElement("tr");
+
+                tr.innerHTML = `
+            <td class="text-center">${index + 1}</td>
+            <td><strong>${item.kode}</strong></td>
+            <td class="text-center">
+                ${item.status === "Belum Dipakai"
                         ? '<span class="badge bg-success">Belum Dipakai</span>'
                         : '<span class="badge bg-danger">Sudah Dipakai</span>'}
-                </td>
-                <td>${item.kategori || "-"}</td>
-                <td>${item.peserta || "-"}</td>
-                <td class="text-center">${item.deviceId}</td>
-                <td class="text-center">
-                    <button class="btn btn-sm btn-danger" onclick="hapusKode(${index})">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </td>
-            </tr>
+            </td>
+            <td>${item.kategori || "-"}</td>
+            <td>${item.peserta || "-"}</td>
+            <td class="text-center">${item.deviceId}</td>
+            <td class="text-center">
+                <button class="btn btn-sm btn-danger">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
         `;
+
+                tr.querySelector("button").addEventListener("click", () => hapusKode(index));
+                fragment.appendChild(tr);
             });
+
+            tabel.appendChild(fragment);
         }
 
+        /* =====================================================
+           HAPUS KODE
+        ===================================================== */
+
         function hapusKode(index) {
+            if (!confirm("Yakin ingin menghapus kode ini?")) return;
+
             let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
             kodeVoting.splice(index, 1);
             localStorage.setItem("kodeVoting", JSON.stringify(kodeVoting));
+
             tampilkanKode();
         }
 
-        /* ================================
-           SIMULASI VALIDASI 1 DEVICE 1 VOTE
-           ================================ */
+        /* =====================================================
+           VALIDASI & GUNAKAN KODE (LEBIH AMAN)
+        ===================================================== */
 
         function gunakanKode(kodeInput, kategoriDipilih, pesertaDipilih) {
 
             let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
 
-            // Ambil / buat device ID
-            let deviceId = localStorage.getItem("deviceId");
-            if (!deviceId) {
-                deviceId = "DEV-" + Math.random().toString(36).substring(2, 10);
-                localStorage.setItem("deviceId", deviceId);
-            }
+            const deviceId = getOrCreateDeviceId();
+            const fingerprint = getDeviceFingerprint();
 
-            // 🚫 CEK: Apakah device sudah pernah voting
-            const deviceSudahVote = kodeVoting.some(k => k.deviceId === deviceId);
+            // Cek apakah device / fingerprint pernah voting
+            const sudahVoting = kodeVoting.some(k =>
+                k.deviceId === deviceId ||
+                k.fingerprint === fingerprint
+            );
 
-            if (deviceSudahVote) {
-                tampilkanPeringatan("Device ini sudah melakukan voting. Anda tidak dapat vote lebih dari satu kali.");
+            if (sudahVoting) {
+                tampilkanPeringatan("Perangkat ini sudah melakukan voting dan tidak dapat vote lebih dari satu kali.");
                 return false;
             }
 
-            // Cari kode
             const index = kodeVoting.findIndex(k => k.kode === kodeInput);
 
             if (index === -1) {
@@ -261,277 +337,28 @@
                 return false;
             }
 
-            // ✅ Simpan vote
-            kodeVoting[index].status = "Sudah Dipakai";
-            kodeVoting[index].deviceId = deviceId;
-            kodeVoting[index].kategori = kategoriDipilih;
-            kodeVoting[index].peserta = pesertaDipilih;
-            kodeVoting[index].tanggal = new Date().toISOString();
+            // Simpan vote
+            kodeVoting[index] = {
+                ...kodeVoting[index],
+                status: "Sudah Dipakai",
+                deviceId,
+                fingerprint,
+                kategori: kategoriDipilih,
+                peserta: pesertaDipilih,
+                tanggal: new Date().toISOString()
+            };
 
             localStorage.setItem("kodeVoting", JSON.stringify(kodeVoting));
 
-            // Modal sukses (optional bisa dibuat hijau)
             tampilkanPeringatan("Voting berhasil! Terima kasih telah berpartisipasi.");
-
             tampilkanKode();
+
             return true;
         }
 
-        function cetakKode() {
-            let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
-
-            let daftarKode = kodeVoting
-                .filter(k => k.status !== "Sudah Dipakai")
-                .map(k => k.kode);
-
-            if (daftarKode.length === 0) {
-                alert("Tidak ada kode yang bisa dicetak!");
-                return;
-            }
-
-            let voucherHTML = "";
-
-            daftarKode.forEach(kode => {
-                voucherHTML += `
-        <div class="voucher">
-            <div class="ornament">☪</div>
-
-            <div class="voucher-header">
-                SERBU RAMADHAN
-            </div>
-
-            <div class="voucher-body">
-                <div class="label">KODE VOTING</div>
-                <div class="kode">${kode}</div>
-            </div>
-
-            <div class="voucher-footer">
-                Gunakan kode ini untuk memberikan suara terbaikmu 🌙
-            </div>
-        </div>
-        `;
-            });
-
-            const win = window.open("", "", "width=1200,height=900");
-            win.document.write(`
-    <html>
-    <head>
-        <title>Voucher Kode Voting</title>
-        <style>
-            body {
-                font-family: 'Poppins', sans-serif;
-                background: #f3f3f3;
-                padding: 30px;
-            }
-
-            .container-voucher {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 20px;
-            }
-
-            .voucher {
-                width: 270px;
-                padding: 20px;
-                border-radius: 18px;
-                background: linear-gradient(135deg, #5f0f99, #8e2de2);
-                color: white;
-                position: relative;
-                overflow: hidden;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-                text-align: center;
-            }
-
-            /* Aksen Pink Glow */
-            .voucher::before {
-                content: "";
-                position: absolute;
-                top: -50px;
-                right: -50px;
-                width: 150px;
-                height: 150px;
-                background: radial-gradient(circle, #ff4fd8, transparent 70%);
-                opacity: 0.4;
-            }
-
-            .voucher::after {
-                content: "";
-                position: absolute;
-                bottom: -50px;
-                left: -50px;
-                width: 150px;
-                height: 150px;
-                background: radial-gradient(circle, #ff80ec, transparent 70%);
-                opacity: 0.4;
-            }
-
-            .ornament {
-                font-size: 26px;
-                opacity: 0.8;
-                margin-bottom: 8px;
-            }
-
-            .voucher-header {
-                font-size: 15px;
-                font-weight: 600;
-                letter-spacing: 1px;
-                margin-bottom: 10px;
-                color: #ffd6ff;
-            }
-
-            .label {
-                font-size: 12px;
-                opacity: 0.9;
-            }
-
-            .kode {
-                font-size: 20px;
-                font-weight: bold;
-                margin: 10px 0;
-                letter-spacing: 3px;
-                padding: 8px;
-                background: rgba(255,255,255,0.15);
-                border-radius: 8px;
-            }
-
-            .voucher-footer {
-                font-size: 11px;
-                opacity: 0.85;
-                margin-top: 8px;
-            }
-
-            @media print {
-                body {
-                    background: white;
-                }
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container-voucher">
-            ${voucherHTML}
-        </div>
-    </body>
-    </html>
-    `);
-
-            win.document.close();
-            win.focus();
-            win.print();
-        }
-
-        function downloadVoucherPDF() {
-            let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
-
-            let daftarKode = kodeVoting
-                .filter(k => k.status !== "Sudah Dipakai")
-                .map(k => k.kode);
-
-            if (daftarKode.length === 0) {
-                alert("Tidak ada kode yang tersedia!");
-                return;
-            }
-
-            let container = document.createElement("div");
-
-            container.innerHTML = `
-        <div style="
-            width:210mm;
-            min-height:297mm;
-            padding:15mm;
-            box-sizing:border-box;
-            font-family:Poppins, sans-serif;
-        ">
-
-            <div style="
-                display:grid;
-                grid-template-columns: repeat(3, 60mm);
-                gap:10mm;
-                justify-content:center;
-            ">
-
-                ${daftarKode.map(kode => `
-                    <div style="
-                        width:60mm;
-                        height:40mm;
-                        border:2px dashed #999;
-                        border-radius:8px;
-                        padding:6mm;
-                        box-sizing:border-box;
-                        background:linear-gradient(135deg,#5f0f99,#8e2de2);
-                        color:white;
-                        position:relative;
-                        display:flex;
-                        flex-direction:column;
-                        justify-content:center;
-                        align-items:center;
-                        text-align:center;
-                    ">
-
-                        <!-- Ornamen -->
-                        <div style="
-                            position:absolute;
-                            top:4mm;
-                            right:6mm;
-                            font-size:14px;
-                            opacity:0.3;
-                        ">
-                            🌙
-                        </div>
-
-                        <div style="
-                            font-size:9pt;
-                            font-weight:600;
-                            letter-spacing:1px;
-                            margin-bottom:3mm;
-                            color:#ffd6ff;
-                        ">
-                            SERBU RAMADHAN
-                        </div>
-
-                        <div style="
-                            font-size:8pt;
-                            opacity:0.9;
-                        ">
-                            KODE VOTING
-                        </div>
-
-                        <div style="
-                            font-size:12pt;
-                            font-weight:bold;
-                            letter-spacing:2px;
-                            margin:4mm 0;
-                            padding:2mm 4mm;
-                            background:rgba(255,255,255,0.15);
-                            border-radius:4px;
-                        ">
-                            ${kode}
-                        </div>
-
-                        <div style="
-                            font-size:7pt;
-                            opacity:0.8;
-                        ">
-                            Gunakan untuk 1x voting
-                        </div>
-
-                    </div>
-                `).join("")}
-
-            </div>
-        </div>
-    `;
-
-            const opt = {
-                margin: 0,
-                filename: 'Voucher_Kode_Voting_A4.pdf',
-                image: { type: 'jpeg', quality: 1 },
-                html2canvas: { scale: 3 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().set(opt).from(container).save();
-        }
+        /* =====================================================
+           MODAL PERINGATAN
+        ===================================================== */
 
         function tampilkanPeringatan(pesan) {
             document.getElementById("isiPeringatan").innerText = pesan;
