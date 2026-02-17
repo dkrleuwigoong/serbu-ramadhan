@@ -136,6 +136,22 @@
             margin-bottom: 10px;
             filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.6));
         }
+
+        .btn-back {
+            width: 60%;
+            padding: 12px;
+            border-radius: 12px;
+            border: 2px solid white;
+            background: transparent;
+            color: white;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .btn-back:hover {
+            background: white;
+            color: #333;
+        }
     </style>
 
 </head>
@@ -157,6 +173,10 @@
 
             <button type="submit" class="btn-login">
                 LOGIN
+            </button>
+
+            <button type="button" class="btn-back mt-3" onclick="goBack()">
+                <i class="bi bi-arrow-left"></i> BACK
             </button>
         </form>
 
@@ -199,11 +219,9 @@
 
                 let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
 
-                // Ambil device & fingerprint
                 const deviceId = getOrCreateDeviceId();
                 const fingerprint = getDeviceFingerprint();
 
-                // 🚫 CEK apakah device sudah pernah voting
                 const sudahVoting = kodeVoting.some(k =>
                     k.deviceId === deviceId ||
                     k.fingerprint === fingerprint
@@ -214,7 +232,6 @@
                     return;
                 }
 
-                // Cari kode
                 const dataKode = kodeVoting.find(k => k.kode === kodeInput);
 
                 if (!dataKode) {
@@ -227,13 +244,68 @@
                     return;
                 }
 
-                // ✅ Simpan kode aktif (BELUM ubah status)
                 localStorage.setItem("kodeAktif", kodeInput);
 
                 window.location.href = "voting.html";
             });
         });
+
+        // ===== HASH =====
+        function simpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = ((hash << 5) - hash) + str.charCodeAt(i);
+                hash |= 0;
+            }
+            return hash.toString();
+        }
+
+        // ===== FINGERPRINT =====
+        function getDeviceFingerprint() {
+            const data = [
+                navigator.userAgent,
+                navigator.language,
+                screen.width + "x" + screen.height,
+                Intl.DateTimeFormat().resolvedOptions().timeZone,
+                navigator.platform
+            ].join("||");
+
+            return simpleHash(data);
+        }
+
+        // ===== COOKIE =====
+        function getCookie(name) {
+            let value = "; " + document.cookie;
+            let parts = value.split("; " + name + "=");
+            if (parts.length === 2) return parts.pop().split(";").shift();
+        }
+
+        // ===== DEVICE ID =====
+        function getOrCreateDeviceId() {
+            let deviceId =
+                localStorage.getItem("deviceId") ||
+                sessionStorage.getItem("deviceId") ||
+                getCookie("deviceId");
+
+            if (!deviceId) {
+                deviceId = "DEV-" + Math.random().toString(36).substring(2, 12);
+                localStorage.setItem("deviceId", deviceId);
+                sessionStorage.setItem("deviceId", deviceId);
+                document.cookie = "deviceId=" + deviceId + "; path=/; max-age=31536000";
+            }
+
+            return deviceId;
+        }
+
+        function goBack() {
+            if (document.referrer) {
+                window.history.back();
+            } else {
+                window.location.href = "index.html"; // fallback kalau tidak ada history
+            }
+        }
     </script>
+
 </body>
 
 </html>
