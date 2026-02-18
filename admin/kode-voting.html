@@ -157,9 +157,23 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", init);
+
+        function init() {
             tampilkanKode();
-        });
+        }
+
+        /* =====================================================
+           STORAGE HELPER
+        ===================================================== */
+
+        function getKodeVoting() {
+            return JSON.parse(localStorage.getItem("kodeVoting")) || [];
+        }
+
+        function setKodeVoting(data) {
+            localStorage.setItem("kodeVoting", JSON.stringify(data));
+        }
 
         /* =====================================================
            UTILITAS KEAMANAN
@@ -190,12 +204,13 @@
 
         // Cookie helper
         function getCookie(name) {
-            let value = "; " + document.cookie;
-            let parts = value.split("; " + name + "=");
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
             if (parts.length === 2) return parts.pop().split(";").shift();
+            return null;
         }
 
-        // Device ID generator (disimpan 3 tempat)
+        // Device ID
         function getOrCreateDeviceId() {
             let deviceId =
                 localStorage.getItem("deviceId") ||
@@ -203,10 +218,10 @@
                 getCookie("deviceId");
 
             if (!deviceId) {
-                deviceId = "DEV-" + Math.random().toString(36).substring(2, 12);
+                deviceId = "DEV-" + crypto.randomUUID().slice(0, 8);
                 localStorage.setItem("deviceId", deviceId);
                 sessionStorage.setItem("deviceId", deviceId);
-                document.cookie = "deviceId=" + deviceId + "; path=/; max-age=31536000";
+                document.cookie = `deviceId=${deviceId}; path=/; max-age=31536000`;
             }
 
             return deviceId;
@@ -217,7 +232,7 @@
         ===================================================== */
 
         function generateKode() {
-            let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
+            const kodeVoting = getKodeVoting();
 
             let kodeBaru;
             do {
@@ -234,7 +249,7 @@
                 tanggal: "-"
             });
 
-            localStorage.setItem("kodeVoting", JSON.stringify(kodeVoting));
+            setKodeVoting(kodeVoting);
             tampilkanKode();
         }
 
@@ -244,18 +259,19 @@
 
         function tampilkanKode() {
             const tabel = document.getElementById("tabelKode");
-            tabel.innerHTML = "";
+            if (!tabel) return;
 
-            let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
+            const kodeVoting = getKodeVoting();
+            tabel.innerHTML = "";
 
             if (kodeVoting.length === 0) {
                 tabel.innerHTML = `
-            <tr>
-                <td colspan="7" class="text-center text-muted">
-                    Belum ada kode voting
-                </td>
-            </tr>
-        `;
+                <tr>
+                    <td colspan="7" class="text-center text-muted">
+                        Belum ada kode voting
+                    </td>
+                </tr>
+            `;
                 return;
             }
 
@@ -265,24 +281,26 @@
                 const tr = document.createElement("tr");
 
                 tr.innerHTML = `
-            <td class="text-center">${index + 1}</td>
-            <td><strong>${item.kode}</strong></td>
-            <td class="text-center">
-                ${item.status === "Belum Dipakai"
+                <td class="text-center">${index + 1}</td>
+                <td><strong>${item.kode}</strong></td>
+                <td class="text-center">
+                    ${item.status === "Belum Dipakai"
                         ? '<span class="badge bg-success">Belum Dipakai</span>'
                         : '<span class="badge bg-danger">Sudah Dipakai</span>'}
-            </td>
-            <td>${item.kategori || "-"}</td>
-            <td>${item.peserta || "-"}</td>
-            <td class="text-center">${item.deviceId}</td>
-            <td class="text-center">
-                <button class="btn btn-sm btn-danger">
-                    <i class="bi bi-trash"></i>
-                </button>
-            </td>
-        `;
+                </td>
+                <td>${item.kategori || "-"}</td>
+                <td>${item.peserta || "-"}</td>
+                <td class="text-center">${item.deviceId || "-"}</td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-danger">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            `;
 
-                tr.querySelector("button").addEventListener("click", () => hapusKode(index));
+                tr.querySelector("button")
+                    .addEventListener("click", () => hapusKode(index));
+
                 fragment.appendChild(tr);
             });
 
@@ -294,30 +312,35 @@
         ===================================================== */
 
         function hapusKode(index) {
+            const kodeVoting = getKodeVoting();
+
+            if (!kodeVoting[index]) return;
+
             if (!confirm("Yakin ingin menghapus kode ini?")) return;
 
-            let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
             kodeVoting.splice(index, 1);
-            localStorage.setItem("kodeVoting", JSON.stringify(kodeVoting));
-
+            setKodeVoting(kodeVoting);
             tampilkanKode();
         }
 
         /* =====================================================
-           VALIDASI & GUNAKAN KODE (LEBIH AMAN)
+           VALIDASI & GUNAKAN KODE
         ===================================================== */
 
         function gunakanKode(kodeInput, kategoriDipilih, pesertaDipilih) {
 
-            let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
+            if (!kodeInput) {
+                tampilkanPeringatan("Kode tidak boleh kosong!");
+                return false;
+            }
 
+            const kodeVoting = getKodeVoting();
             const deviceId = getOrCreateDeviceId();
             const fingerprint = getDeviceFingerprint();
 
-            // Cek apakah device / fingerprint pernah voting
+            // Cek apakah device sudah pernah voting
             const sudahVoting = kodeVoting.some(k =>
-                k.deviceId === deviceId ||
-                k.fingerprint === fingerprint
+                k.deviceId === deviceId || k.fingerprint === fingerprint
             );
 
             if (sudahVoting) {
@@ -337,18 +360,18 @@
                 return false;
             }
 
-            // Simpan vote
+            // Simpan voting
             kodeVoting[index] = {
                 ...kodeVoting[index],
                 status: "Sudah Dipakai",
                 deviceId,
                 fingerprint,
-                kategori: kategoriDipilih,
-                peserta: pesertaDipilih,
+                kategori: kategoriDipilih || "-",
+                peserta: pesertaDipilih || "-",
                 tanggal: new Date().toISOString()
             };
 
-            localStorage.setItem("kodeVoting", JSON.stringify(kodeVoting));
+            setKodeVoting(kodeVoting);
 
             tampilkanPeringatan("Voting berhasil! Terima kasih telah berpartisipasi.");
             tampilkanKode();
@@ -361,12 +384,17 @@
         ===================================================== */
 
         function tampilkanPeringatan(pesan) {
-            document.getElementById("isiPeringatan").innerText = pesan;
-            let modal = new bootstrap.Modal(document.getElementById('modalPeringatan'));
+            const isi = document.getElementById("isiPeringatan");
+            if (!isi) return;
+
+            isi.innerText = pesan;
+
+            const modalEl = document.getElementById("modalPeringatan");
+            const modal = new bootstrap.Modal(modalEl);
             modal.show();
         }
-
     </script>
+
 </body>
 
 </html>
