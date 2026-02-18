@@ -153,16 +153,8 @@
             color: #333;
         }
 
-        .btn-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            /* jarak antar tombol */
-            margin-top: 20px;
-        }
-
-        .btn-wrapper button {
-            width: 100%;
+        .btn-fixed {
+            width: 250px;
         }
     </style>
 
@@ -183,15 +175,16 @@
         <form id="formLogin">
             <input type="text" id="kodeInput" class="input-code text-uppercase" placeholder="ENTER YOUR CODE" required>
 
-            <div class="d-flex flex-column gap-3 mt-3">
-                <button type="submit" class="btn-login w-100">
+            <div class="d-flex flex-column align-items-center gap-3 mt-3">
+                <button type="submit" class="btn-login btn-fixed">
                     LOGIN
                 </button>
 
-                <button type="button" class="btn-back w-100" onclick="goBack()">
+                <button type="button" class="btn-back btn-fixed" onclick="goBack()">
                     <i class="bi bi-arrow-left"></i> BACK
                 </button>
             </div>
+
         </form>
 
         <div id="pesan" class="text-warning mt-3 small"></div>
