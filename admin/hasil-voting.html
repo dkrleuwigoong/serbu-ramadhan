@@ -141,44 +141,101 @@
             hasilPerKategori[v.kategori][v.peserta]++;
         });
 
-        const hasilContainer = document.getElementById("hasilContainer");
+        function renderKlasemen() {
 
-        Object.keys(hasilPerKategori).forEach(kategori => {
+            const hasilContainer = document.getElementById("hasilContainer");
+            hasilContainer.innerHTML = "";
 
-            let totalKategori = Object.values(hasilPerKategori[kategori])
-                .reduce((a, b) => a + b, 0);
+            let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
 
-            let html = `
-                <div class="card shadow-sm card-custom mb-4">
-                    <div class="card-body">
-                        <h5 class="mb-3">
-                            <i class="bi bi-award me-2 text-primary"></i>
-                            ${kategori}
-                        </h5>
-            `;
+            // Buat struktur hasil per kategori
+            let hasilPerKategori = {};
 
-            Object.keys(hasilPerKategori[kategori]).forEach(peserta => {
+            kodeVoting.forEach(item => {
+                if (item.status === "Sudah Dipakai") {
 
-                let jumlah = hasilPerKategori[kategori][peserta];
-                let persen = ((jumlah / totalKategori) * 100).toFixed(1);
+                    if (!hasilPerKategori[item.kategori]) {
+                        hasilPerKategori[item.kategori] = {};
+                    }
 
-                html += `
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between">
-                            <span>${peserta}</span>
-                            <span class="fw-semibold">${jumlah} suara (${persen}%)</span>
-                        </div>
-                        <div class="progress mt-1">
-                            <div class="progress-bar bg-primary" 
-                                style="width: ${persen}%"></div>
-                        </div>
-                    </div>
-                `;
+                    if (!hasilPerKategori[item.kategori][item.peserta]) {
+                        hasilPerKategori[item.kategori][item.peserta] = 0;
+                    }
+
+                    hasilPerKategori[item.kategori][item.peserta]++;
+                }
             });
 
-            html += `</div></div>`;
+            Object.keys(hasilPerKategori).forEach(kategori => {
 
-            hasilContainer.innerHTML += html;
+                let dataPeserta = Object.entries(hasilPerKategori[kategori]);
+
+                let totalKategori = dataPeserta
+                    .reduce((total, [, jumlah]) => total + jumlah, 0);
+
+                dataPeserta.sort((a, b) => b[1] - a[1]);
+
+                let html = `
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">
+                        <i class="bi bi-trophy me-2 text-warning"></i>
+                        Klasemen ${kategori}
+                    </h5>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th width="8%">Rank</th>
+                                    <th>Nama Peserta</th>
+                                    <th width="20%">Jumlah Suara</th>
+                                    <th width="20%">Persentase</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+        `;
+
+                dataPeserta.forEach(([peserta, jumlah], index) => {
+
+                    let persen = totalKategori > 0
+                        ? ((jumlah / totalKategori) * 100).toFixed(1)
+                        : 0;
+
+                    html += `
+                <tr>
+                    <td class="text-center fw-bold">${index + 1}</td>
+                    <td>${peserta}</td>
+                    <td class="text-center">${jumlah}</td>
+                    <td class="text-center">${persen}%</td>
+                </tr>
+            `;
+                });
+
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+
+                hasilContainer.innerHTML += html;
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            renderKlasemen();
+        });
+
+        // Refresh setiap 3 detik
+        setInterval(() => {
+            renderKlasemen();
+        }, 3000);
+
+        // Jika tab lain update localStorage → langsung refresh
+        window.addEventListener("storage", function () {
+            renderKlasemen();
         });
 
         function logout() {
