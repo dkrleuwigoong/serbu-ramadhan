@@ -321,20 +321,22 @@
 
         // Mapping Nama Kategori ke Kode
         const kategoriKodeMap = {
-            "Pidato": "PTD",
+            "Pidato": "PDT",
             "Kaligrafi": "KLG",
-            "Mewarnai": "MWN",
+            "Nasyid": "NSD",
             "Vlog": "VLG",
-            "Poster": "PST"
+            "Poster": "PST",
+            "Essai": "ESS"
         };
 
         // Counter per kode
         let counters = {
-            PTD: 1,
+            PDT: 1,
             KLG: 1,
-            MWN: 1,
+            NSD: 1,
             VLG: 1,
-            PST: 1
+            PST: 1,
+            ESS: 1
         };
 
         document.getElementById("kategori").addEventListener("change", function () {

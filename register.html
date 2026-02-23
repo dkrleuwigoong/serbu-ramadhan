@@ -73,41 +73,6 @@
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label>Jenis Kelamin</label>
-                        <select class="form-select" id="jenisKelamin" required>
-                            <option value="">Pilih</option>
-                            <option>Laki-laki</option>
-                            <option>Perempuan</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label>Tempat Lahir</label>
-                        <input type="text" class="form-control" id="tempatLahir" required>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label>Tanggal Lahir</label>
-                        <input type="date" class="form-control" id="tanggalLahir" required>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label>Alamat</label>
-                        <input type="text" class="form-control" id="alamat" required>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label>Golongan</label>
-                        <select class="form-select" id="golongan" required>
-                            <option value="">Pilih Golongan</option>
-                            <option>Siaga</option>
-                            <option>Penggalang</option>
-                            <option>Penegak</option>
-                            <option>Pandega</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
                         <label>Pangkalan</label>
                         <input type="text" class="form-control" id="pangkalan" required>
                     </div>
@@ -118,24 +83,15 @@
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label>Nama Orang Tua</label>
-                        <input type="text" class="form-control" id="namaOrtu" required>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label>No. HP</label>
-                        <input type="text" class="form-control" id="noHp" required>
-                    </div>
-
-                    <div class="col-md-6 mb-3">
                         <label>Kategori</label>
                         <select class="form-select" id="kategori" required>
                             <option value="">Pilih Kategori</option>
                             <option>Pidato</option>
                             <option>Kaligrafi</option>
-                            <option>Mewarnai</option>
+                            <option>Nasyid</option>
                             <option>Vlog</option>
                             <option>Poster</option>
+                            <option>Essai</option>
                         </select>
                     </div>
 
@@ -193,15 +149,8 @@
                 id: Date.now(),
                 nomor: document.getElementById("nomor").value,
                 nama: document.getElementById("nama").value,
-                jk: document.getElementById("jk").value,
-                tempat: document.getElementById("tempat").value,
-                tanggal: document.getElementById("tanggal").value,
-                alamat: document.getElementById("alamat").value,
-                golongan: document.getElementById("golongan").value,
                 pangkalan: document.getElementById("pangkalan").value,
                 kwarran: document.getElementById("kwarran").value,
-                ortu: document.getElementById("namaOrtu").value,
-                hp: document.getElementById("noHp").value,
                 kategori: document.getElementById("kategori").value
             };
 
@@ -220,11 +169,12 @@
 
         // Mapping Nama Kategori ke Kode
         const kategoriKodeMap = {
-            "Pidato": "PTD",
+            "Pidato": "PDT",
             "Kaligrafi": "KLG",
-            "Mewarnai": "MWN",
+            "Nasyid": "NSD",
             "Vlog": "VLG",
-            "Poster": "PST"
+            "Poster": "PST",
+            "Essai": "ESS"
         };
 
         function generateNomorPeserta() {
