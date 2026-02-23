@@ -31,6 +31,10 @@
         .offcanvas {
             max-width: 250px;
         }
+
+        .card {
+            border-radius: 5px;
+        }
     </style>
 </head>
 
@@ -267,18 +271,26 @@
             return deviceId;
         }
 
-        /* =====================================================
-           GENERATE KODE
-        ===================================================== */
+        /* GENERATE KODE */
 
         function generateKode(jumlah) {
             let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
 
+            const karakter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+            function buatKode(panjang = 6) {
+                let hasil = "";
+                for (let i = 0; i < panjang; i++) {
+                    hasil += karakter.charAt(Math.floor(Math.random() * karakter.length));
+                }
+                return hasil;
+            }
+
             for (let i = 0; i < jumlah; i++) {
-                let kodeBaru = "SR" + Math.random().toString(36).substring(2, 8).toUpperCase();
+                let kodeBaru = "SR" + buatKode(6);
 
                 kodeVoting.push({
-                    id: Date.now() + i, // ID unik
+                    id: Date.now() + i,
                     kode: kodeBaru,
                     status: "Belum Dipakai",
                     kategori: "",
