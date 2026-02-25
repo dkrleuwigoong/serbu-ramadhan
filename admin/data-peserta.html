@@ -111,17 +111,42 @@
         <div class="d-flex justify-content-between align-items-center mb-2">
             <h6 class="mb-0 fw-semibold">Daftar Peserta</h6>
 
-            <div class="d-flex gap-1">
-                <button class="btn btn-success btn-sm" onclick="downloadPDF()">
-                    <i class="bi bi-download me-1"></i> Unduh
-                </button>
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
 
-                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalTambahPeserta">
-                    <i class="bi bi-plus-circle me-1"></i> Tambah
-                </button>
+                <!-- FILTER -->
+                <div class="btn-group flex-wrap" role="group" name="filter" aria-label="Filter Kategori">
+                    <input type="radio" class="btn-check" name="filter" id="semua" autocomplete="off" checked>
+                    <label class="btn btn-outline-primary btn-sm" for="semua">Semua</label>
+
+                    <input type="radio" class="btn-check" name="filter" id="pidato" autocomplete="off">
+                    <label class="btn btn-outline-primary btn-sm" for="pidato">Pidato</label>
+
+                    <input type="radio" class="btn-check" name="filter" id="nasyid" autocomplete="off">
+                    <label class="btn btn-outline-primary btn-sm" for="nasyid">Nasyid</label>
+
+                    <input type="radio" class="btn-check" name="filter" id="kaligrafi" autocomplete="off">
+                    <label class="btn btn-outline-primary btn-sm" for="kaligrafi">Kaligrafi</label>
+
+                    <input type="radio" class="btn-check" name="filter" id="vlog" autocomplete="off">
+                    <label class="btn btn-outline-primary btn-sm" for="vlog">Vlog</label>
+
+                    <input type="radio" class="btn-check" name="filter" id="poster" autocomplete="off">
+                    <label class="btn btn-outline-primary btn-sm" for="poster">Poster</label>
+                </div>
+
+                <!-- ACTION BUTTON -->
+                <div class="d-flex gap-2">
+                    <button class="btn btn-success btn-sm" onclick="downloadPDF()">
+                        <i class="bi bi-download me-1"></i> Unduh
+                    </button>
+
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalTambahPeserta">
+                        <i class="bi bi-plus-circle me-1"></i> Tambah
+                    </button>
+                </div>
+
             </div>
         </div>
-
 
         <!-- Table -->
         <div class="card shadow-sm">
@@ -354,11 +379,18 @@
 
             let kode = kategoriKodeMap[namaKategori];
 
-            let nomorUrut = String(counters[kode]).padStart(3, '0');
+            // Ambil data peserta dari localStorage
+            let data = JSON.parse(localStorage.getItem("peserta")) || [];
+
+            // Hitung jumlah peserta dengan kategori yang sama
+            let jumlahKategori = data.filter(item =>
+                item.kategori === namaKategori
+            ).length;
+
+            // Nomor berikutnya
+            let nomorUrut = String(jumlahKategori + 1).padStart(3, '0');
 
             document.getElementById("nomor").value = `${kode}-${nomorUrut}`;
-
-            counters[kode]++;
         });
 
 
@@ -478,6 +510,92 @@
             );
 
             doc.save("Daftar Peserta Serbu Ramadhan 2026.pdf");
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const radios = document.querySelectorAll('input[name="filter"]');
+            const tbody = document.getElementById("tabelPeserta");
+
+            let dataPeserta = JSON.parse(localStorage.getItem("peserta")) || [];
+
+            // ===============================
+            // RENDER TABLE
+            // ===============================
+            function renderTable(data) {
+                tbody.innerHTML = "";
+
+                data.forEach((item, index) => {
+
+                    // cari index asli di localStorage
+                    const indexAsli = dataPeserta.indexOf(item);
+
+                    let row = `
+                <tr>
+                    <td class="text-center">${index + 1}</td>
+                    <td>${item.nomor}</td>
+                    <td>${item.nama}</td>
+                    <td>${item.jk}</td>
+                    <td>${item.pangkalan}</td>
+                    <td>${item.kwarran}</td>
+                    <td>${item.kategori}</td>
+                    <td class="text-center">
+                        <button class="btn btn-warning btn-sm me-1"
+                            onclick="editPeserta(${indexAsli})"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalTambahPeserta">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="hapusPeserta(${indexAsli})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+                    tbody.innerHTML += row;
+                });
+            }
+
+            // ===============================
+            // FILTER
+            // ===============================
+            function filterData(kategoriDipilih) {
+                if (kategoriDipilih === "Semua") {
+                    renderTable(dataPeserta);
+                } else {
+                    const hasilFilter = dataPeserta.filter(item =>
+                        item.kategori.toLowerCase() === kategoriDipilih.toLowerCase()
+                    );
+                    renderTable(hasilFilter);
+                }
+            }
+
+            radios.forEach(radio => {
+                radio.addEventListener("change", function () {
+                    const labelText = document
+                        .querySelector('label[for="' + this.id + '"]')
+                        .innerText
+                        .trim();
+
+                    filterData(labelText);
+                });
+            });
+
+            renderTable(dataPeserta);
+
+        });
+
+        // ===============================
+        // HAPUS
+        // ===============================
+        function hapusPeserta(index) {
+            let data = JSON.parse(localStorage.getItem("peserta")) || [];
+
+            if (confirm("Yakin ingin menghapus peserta ini?")) {
+                data.splice(index, 1);
+                localStorage.setItem("peserta", JSON.stringify(data));
+                location.reload();
+            }
         }
     </script>
 </body>
