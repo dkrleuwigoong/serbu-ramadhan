@@ -132,6 +132,9 @@
 
                     <input type="radio" class="btn-check" name="filter" id="poster" autocomplete="off">
                     <label class="btn btn-outline-primary btn-sm" for="poster">Poster</label>
+
+                    <input type="radio" class="btn-check" name="filter" id="essai" autocomplete="off">
+                    <label class="btn btn-outline-primary btn-sm" for="essai">Essai</label>
                 </div>
 
                 <!-- ACTION BUTTON -->
@@ -196,7 +199,8 @@
 
                             <div class="col-md-6">
                                 <label class="form-label">Nama Peserta</label>
-                                <input type="text" class="form-control" name="nama">
+                                <input type="text" class="form-control text-uppercase" name="nama"
+                                    oninput="this.value = this.value.toUpperCase()">
                             </div>
 
                             <div class="col-md-6">
@@ -210,12 +214,57 @@
 
                             <div class="col-md-6">
                                 <label class="form-label">Pangkalan</label>
-                                <input type="text" class="form-control" name="pangkalan">
+                                <input type="text" class="form-control text-uppercase" name="pangkalan"
+                                    oninput="this.value = this.value.toUpperCase()">
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label">Kwarran</label>
-                                <input type="text" class="form-control" name="kwarran">
+                                <label class="form-label">Kwarran (Kecamatan)</label>
+                                <select class="form-select" name="kwarran" required>
+                                    <option value="">Pilih Kecamatan</option>
+                                    <option>Banjarwangi</option>
+                                    <option>Banyuresmi</option>
+                                    <option>Bayongbong</option>
+                                    <option>Blubur Limbangan</option>
+                                    <option>Bungbulang</option>
+                                    <option>Caringin</option>
+                                    <option>Cibalong</option>
+                                    <option>Cibatu</option>
+                                    <option>Cibiuk</option>
+                                    <option>Cigedug</option>
+                                    <option>Cihurip</option>
+                                    <option>Cikajang</option>
+                                    <option>Cikelet</option>
+                                    <option>Cilawu</option>
+                                    <option>Cisewu</option>
+                                    <option>Cisompet</option>
+                                    <option>Cisurupan</option>
+                                    <option>Garut Kota</option>
+                                    <option>Kadungora</option>
+                                    <option>Karangpawitan</option>
+                                    <option>Karangtengah</option>
+                                    <option>Kersamanah</option>
+                                    <option>Leles</option>
+                                    <option>Leuwigoong</option>
+                                    <option>Malangbong</option>
+                                    <option>Mekarmukti</option>
+                                    <option>Pakenjeng</option>
+                                    <option>Pameungpeuk</option>
+                                    <option>Pamulihan</option>
+                                    <option>Pangatikan</option>
+                                    <option>Pasirwangi</option>
+                                    <option>Peundeuy</option>
+                                    <option>Samarang</option>
+                                    <option>Selaawi</option>
+                                    <option>Singajaya</option>
+                                    <option>Sucinaraja</option>
+                                    <option>Sukaresmi</option>
+                                    <option>Sukawening</option>
+                                    <option>Talegong</option>
+                                    <option>Tarogong Kaler</option>
+                                    <option>Tarogong Kidul</option>
+                                    <option>Wanaraja</option>
+                                </select>
                             </div>
 
                             <div class="col-md-6">
@@ -227,6 +276,7 @@
                                     <option value="Nasyid">Nasyid</option>
                                     <option value="Vlog">Vlog</option>
                                     <option value="Poster">Poster</option>
+                                    <option value="Essai">Essai</option>
                                 </select>
 
                             </div>
@@ -540,12 +590,9 @@
                     <td>${item.kwarran}</td>
                     <td>${item.kategori}</td>
                     <td class="text-center">
-                        <button class="btn btn-warning btn-sm me-1"
-                            onclick="editPeserta(${indexAsli})"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modalTambahPeserta">
-                            <i class="bi bi-pencil-square"></i>
-                        </button>
+                        <button class="btn btn-sm btn-warning me-1" onclick="editData(${index})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
                         <button class="btn btn-danger btn-sm" onclick="hapusPeserta(${indexAsli})">
                             <i class="bi bi-trash"></i>
                         </button>

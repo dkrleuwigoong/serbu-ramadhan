@@ -271,12 +271,12 @@
             return deviceId;
         }
 
-        /* GENERATE KODE */
+        /* GENERATE KODE ANGKA SAJA */
 
         function generateKode(jumlah) {
             let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
 
-            const karakter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            const karakter = "0123456789";
 
             function buatKode(panjang = 6) {
                 let hasil = "";
@@ -287,7 +287,15 @@
             }
 
             for (let i = 0; i < jumlah; i++) {
-                let kodeBaru = "SR" + buatKode(6);
+
+                let kodeBaru;
+                let duplikat;
+
+                // Pastikan tidak ada kode yang sama
+                do {
+                    kodeBaru = buatKode(6);
+                    duplikat = kodeVoting.some(item => item.kode === kodeBaru);
+                } while (duplikat);
 
                 kodeVoting.push({
                     id: Date.now() + i,

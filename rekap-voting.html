@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rekap Suara - Serbu Ramadhan</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            background: url("assets/img/bg-serbu-ramadhan2.png") no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        /* Overlay */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 40, 20, 0.65);
+            z-index: -1;
+        }
+
+        .main-card {
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+        }
+
+        .judul {
+            color: #fff;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .kategori-title {
+            background: linear-gradient(45deg, #198754, #157347);
+            color: white;
+            padding: 10px;
+            border-radius: 5px 5px 0 0;
+            font-weight: 600;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        /* Grid Kolom */
+        .kategori-wrapper {
+            flex: 1 1 32%;
+            min-width: 280px;
+        }
+
+        @media (max-width: 992px) {
+            .kategori-wrapper {
+                flex: 1 1 48%;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .kategori-wrapper {
+                flex: 1 1 100%;
+            }
+        }
+
+        /* Table compact */
+        .table {
+            background: rgba(255, 255, 255, 0.95);
+            font-size: 0.8rem;
+        }
+
+        .table th,
+        .table td {
+            padding: 5px 6px;
+        }
+
+        /* Ranking */
+        .rank-1 {
+            background: linear-gradient(45deg, #ffd700, #ffcc00) !important;
+            font-weight: 600;
+        }
+
+        .rank-2 {
+            background: linear-gradient(45deg, #c0c0c0, #d9d9d9) !important;
+            font-weight: 600;
+        }
+
+        .rank-3 {
+            background: linear-gradient(45deg, #cd7f32, #b87333) !important;
+            color: #fff;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container py-5">
+
+        <div class="text-center mb-4">
+            <h2 class="judul">Perolehan Voting Terbanyak Sementara</h2>
+            <p class="text-light">Serbu Ramadan 2026 - Klasemen Per Kategori</p>
+        </div>
+
+        <div class="card shadow-lg main-card">
+            <div id="containerRekap" class="d-flex flex-wrap gap-3"></div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const container = document.getElementById("containerRekap");
+
+            function renderRekap() {
+
+                let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
+                let dataPeserta = JSON.parse(localStorage.getItem("peserta")) || [];
+
+                let suaraMap = {};
+
+                // Hitung suara
+                kodeVoting
+                    .filter(item => item.status === "Sudah Dipakai")
+                    .forEach(item => {
+                        if (!suaraMap[item.peserta]) {
+                            suaraMap[item.peserta] = 0;
+                        }
+                        suaraMap[item.peserta]++;
+                    });
+
+                let kategoriMap = {};
+
+                // Kelompokkan SEMUA peserta berdasarkan kategori
+                dataPeserta.forEach(p => {
+
+                    if (!kategoriMap[p.kategori]) {
+                        kategoriMap[p.kategori] = [];
+                    }
+
+                    kategoriMap[p.kategori].push({
+                        nama: p.nama,
+                        nomor: p.nomor,
+                        suara: suaraMap[p.nama] || 0
+                    });
+                });
+
+                container.innerHTML = "";
+
+                // Jika benar-benar belum ada kategori
+                if (Object.keys(kategoriMap).length === 0) {
+                    container.innerHTML = `
+            <div class="w-100 text-center text-light py-5">
+                <h5>Belum ada data peserta</h5>
+            </div>
+        `;
+                    return;
+                }
+
+                Object.keys(kategoriMap).forEach(kategori => {
+
+                    let pesertaArray = kategoriMap[kategori];
+
+                    // Urutkan walaupun semua 0
+                    pesertaArray.sort((a, b) => b.suara - a.suara);
+
+                    let tabelHTML = `
+            <div class="kategori-wrapper">
+                <div class="kategori-title">${kategori}</div>
+                <div class="table-responsive">
+                    <table class="table table-bordered text-center align-middle mb-0">
+                        <thead class="table-success">
+                            <tr>
+                                <th>Peringkat</th>
+                                <th>No Peserta</th>
+                                <th>Nama</th>
+                                <th>Suara</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+
+                    if (pesertaArray.length === 0) {
+                        tabelHTML += `
+                <tr>
+                    <td colspan="4" class="text-muted">Belum ada peserta</td>
+                </tr>
+            `;
+                    } else {
+
+                        pesertaArray.forEach((item, index) => {
+
+                            let rankClass = "";
+                            if (index === 0) rankClass = "rank-1";
+                            else if (index === 1) rankClass = "rank-2";
+                            else if (index === 2) rankClass = "rank-3";
+
+                            tabelHTML += `
+                    <tr class="${rankClass}">
+                        <td>${index + 1}</td>
+                        <td>${item.nomor}</td>
+                        <td>${item.nama}</td>
+                        <td>${item.suara}</td>
+                    </tr>
+                `;
+                        });
+                    }
+
+                    tabelHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+
+                    container.innerHTML += tabelHTML;
+                });
+            }
+
+            // Render awal
+            renderRekap();
+
+            // Auto refresh tiap 2 detik
+            setInterval(renderRekap, 2000);
+
+            // Realtime antar tab
+            window.addEventListener("storage", function () {
+                renderRekap();
+            });
+
+        });
+    </script>
+
+</body>
+
+</html>
