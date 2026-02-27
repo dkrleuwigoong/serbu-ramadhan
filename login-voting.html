@@ -217,8 +217,7 @@
 
                 const kodeInput = document
                     .getElementById("kodeInput")
-                    .value.trim()
-                    .toUpperCase();
+                    .value.trim();
 
                 if (!kodeInput) {
                     tampilkanError("Kode tidak boleh kosong!");
@@ -232,42 +231,56 @@
             });
         });
 
-        /* =====================================================
-           VALIDASI LOGIN (SINKRON DENGAN SISTEM UTAMA)
-        ===================================================== */
-
         function validasiLogin(kodeInput) {
 
-            let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
+                let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
 
-            const deviceId = getOrCreateDeviceId();
-            const fingerprint = getDeviceFingerprint();
+                const deviceId = getOrCreateDeviceId();
+                const fingerprint = getDeviceFingerprint();
 
-            // Cek device sudah voting
-            const sudahVoting = kodeVoting.some(k =>
-                k.deviceId === deviceId ||
-                k.fingerprint === fingerprint
-            );
+                // Cek apakah device sudah pernah voting
+                const sudahVoting = kodeVoting.some(k =>
+                    k.deviceId === deviceId ||
+                    k.fingerprint === fingerprint
+                );
 
-            if (sudahVoting) {
-                tampilkanError("Perangkat ini sudah melakukan voting dan tidak dapat login kembali.");
-                return false;
+                if (sudahVoting) {
+                    tampilkanError("Perangkat ini sudah melakukan voting dan tidak dapat login kembali.");
+                    return false;
+                }
+
+                const dataKode = kodeVoting.find(k => k.kode === kodeInput);
+
+                if (!dataKode) {
+                    tampilkanError("Kode tidak ditemukan!");
+                    return false;
+                }
+
+                if (dataKode.status === "Sudah Dipakai") {
+                    tampilkanError("Kode sudah digunakan!");
+                    return false;
+                }
+
+                return true;
             }
 
-            const dataKode = kodeVoting.find(k => k.kode === kodeInput);
+            function prosesLogin(kodeInput) {
 
-            if (!dataKode) {
-                tampilkanError("Kode tidak ditemukan!");
-                return false;
-            }
+                    let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
 
-            if (dataKode.status === "Sudah Dipakai") {
-                tampilkanError("Kode sudah digunakan!");
-                return false;
-            }
+                    const deviceId = getOrCreateDeviceId();
+                    const fingerprint = getDeviceFingerprint();
 
-            return true;
-        }
+                    const index = kodeVoting.findIndex(k => k.kode === kodeInput);
+
+                    if (index !== -1) {
+                        kodeVoting[index].status = "Sudah Dipakai";
+                        kodeVoting[index].deviceId = deviceId;
+                        kodeVoting[index].fingerprint = fingerprint;
+
+                        localStorage.setItem("kodeVoting", JSON.stringify(kodeVoting));
+                    }
+                }
 
         /* =====================================================
            UTILITAS
