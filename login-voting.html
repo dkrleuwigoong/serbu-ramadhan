@@ -225,6 +225,7 @@
                 }
 
                 if (validasiLogin(kodeInput)) {
+                    prosesLogin(kodeInput); // ⬅ WAJIB
                     localStorage.setItem("kodeAktif", kodeInput);
                     window.location.href = "voting.html";
                 }
@@ -233,54 +234,53 @@
 
         function validasiLogin(kodeInput) {
 
-                let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
+            let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
 
-                const deviceId = getOrCreateDeviceId();
-                const fingerprint = getDeviceFingerprint();
+            const dataKode = kodeVoting.find(k => k.kode === kodeInput);
 
-                // Cek apakah device sudah pernah voting
-                const sudahVoting = kodeVoting.some(k =>
-                    k.deviceId === deviceId ||
-                    k.fingerprint === fingerprint
-                );
-
-                if (sudahVoting) {
-                    tampilkanError("Perangkat ini sudah melakukan voting dan tidak dapat login kembali.");
-                    return false;
-                }
-
-                const dataKode = kodeVoting.find(k => k.kode === kodeInput);
-
-                if (!dataKode) {
-                    tampilkanError("Kode tidak ditemukan!");
-                    return false;
-                }
-
-                if (dataKode.status === "Sudah Dipakai") {
-                    tampilkanError("Kode sudah digunakan!");
-                    return false;
-                }
-
-                return true;
+            if (!dataKode) {
+                tampilkanError("Kode tidak ditemukan!");
+                return false;
             }
 
-            function prosesLogin(kodeInput) {
+            if (dataKode.status === "Sudah Dipakai") {
+                tampilkanError("Kode sudah digunakan!");
+                return false;
+            }
 
-                    let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
+            const deviceId = getOrCreateDeviceId();
+            const fingerprint = getDeviceFingerprint();
 
-                    const deviceId = getOrCreateDeviceId();
-                    const fingerprint = getDeviceFingerprint();
+            const sudahVoting = kodeVoting.some(k =>
+                k.deviceId === deviceId ||
+                k.fingerprint === fingerprint
+            );
 
-                    const index = kodeVoting.findIndex(k => k.kode === kodeInput);
+            if (sudahVoting) {
+                tampilkanError("Perangkat ini sudah melakukan voting dan tidak dapat login kembali.");
+                return false;
+            }
 
-                    if (index !== -1) {
-                        kodeVoting[index].status = "Sudah Dipakai";
-                        kodeVoting[index].deviceId = deviceId;
-                        kodeVoting[index].fingerprint = fingerprint;
+            return true;
+        }
 
-                        localStorage.setItem("kodeVoting", JSON.stringify(kodeVoting));
-                    }
-                }
+        function prosesLogin(kodeInput) {
+
+            let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
+
+            const deviceId = getOrCreateDeviceId();
+            const fingerprint = getDeviceFingerprint();
+
+            const index = kodeVoting.findIndex(k => k.kode === kodeInput);
+
+            if (index !== -1) {
+                kodeVoting[index].status = "Sudah Dipakai";
+                kodeVoting[index].deviceId = deviceId;
+                kodeVoting[index].fingerprint = fingerprint;
+
+                localStorage.setItem("kodeVoting", JSON.stringify(kodeVoting));
+            }
+        }
 
         /* =====================================================
            UTILITAS
@@ -296,7 +296,6 @@
             return hash.toString();
         }
 
-        // Fingerprint
         function getDeviceFingerprint() {
             const data = [
                 navigator.userAgent,
@@ -309,14 +308,12 @@
             return simpleHash(data);
         }
 
-        // Cookie helper
         function getCookie(name) {
             let value = "; " + document.cookie;
             let parts = value.split("; " + name + "=");
             if (parts.length === 2) return parts.pop().split(";").shift();
         }
 
-        // Device ID
         function getOrCreateDeviceId() {
             let deviceId =
                 localStorage.getItem("deviceId") ||
@@ -332,10 +329,6 @@
 
             return deviceId;
         }
-
-        /* =====================================================
-           HELPER UI
-        ===================================================== */
 
         function tampilkanError(pesan) {
             const el = document.getElementById("pesan");
