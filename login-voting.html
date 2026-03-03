@@ -213,11 +213,9 @@
 
             form.addEventListener("submit", function (e) {
                 e.preventDefault();
-                pesan.innerText = "";
+                tampilkanError("");
 
-                const kodeInput = document
-                    .getElementById("kodeInput")
-                    .value.trim();
+                const kodeInput = document.getElementById("kodeInput")?.value.trim();
 
                 if (!kodeInput) {
                     tampilkanError("Kode tidak boleh kosong!");
@@ -225,16 +223,21 @@
                 }
 
                 if (validasiLogin(kodeInput)) {
-                    prosesLogin(kodeInput); // ⬅ WAJIB
+                    prosesLogin(kodeInput);
                     localStorage.setItem("kodeAktif", kodeInput);
                     window.location.href = "voting.html";
                 }
             });
         });
 
+
+        /* =====================================================
+           VALIDASI LOGIN
+        ===================================================== */
+
         function validasiLogin(kodeInput) {
 
-            let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
+            let kodeVoting = ambilDataKode();
 
             const dataKode = kodeVoting.find(k => k.kode === kodeInput);
 
@@ -249,12 +252,9 @@
             }
 
             const deviceId = getOrCreateDeviceId();
-            const fingerprint = getDeviceFingerprint();
 
-            const sudahVoting = kodeVoting.some(k =>
-                k.deviceId === deviceId ||
-                k.fingerprint === fingerprint
-            );
+            // ⬇ hanya cek berdasarkan deviceId (lebih aman & stabil)
+            const sudahVoting = kodeVoting.some(k => k.deviceId === deviceId);
 
             if (sudahVoting) {
                 tampilkanError("Perangkat ini sudah melakukan voting dan tidak dapat login kembali.");
@@ -264,57 +264,52 @@
             return true;
         }
 
+
+        /* =====================================================
+           PROSES LOGIN
+        ===================================================== */
+
         function prosesLogin(kodeInput) {
 
-            let kodeVoting = JSON.parse(localStorage.getItem("kodeVoting")) || [];
-
+            let kodeVoting = ambilDataKode();
             const deviceId = getOrCreateDeviceId();
-            const fingerprint = getDeviceFingerprint();
 
             const index = kodeVoting.findIndex(k => k.kode === kodeInput);
 
             if (index !== -1) {
                 kodeVoting[index].status = "Sudah Dipakai";
                 kodeVoting[index].deviceId = deviceId;
-                kodeVoting[index].fingerprint = fingerprint;
 
-                localStorage.setItem("kodeVoting", JSON.stringify(kodeVoting));
+                simpanDataKode(kodeVoting);
             }
         }
+
 
         /* =====================================================
-           UTILITAS
+           STORAGE SAFE HANDLER
         ===================================================== */
 
-        // Hash sederhana
-        function simpleHash(str) {
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                hash = ((hash << 5) - hash) + str.charCodeAt(i);
-                hash |= 0;
+        function ambilDataKode() {
+            try {
+                return JSON.parse(localStorage.getItem("kodeVoting")) || [];
+            } catch (e) {
+                console.error("Data rusak, reset ulang.");
+                localStorage.removeItem("kodeVoting");
+                return [];
             }
-            return hash.toString();
         }
 
-        function getDeviceFingerprint() {
-            const data = [
-                navigator.userAgent,
-                navigator.language,
-                screen.width + "x" + screen.height,
-                Intl.DateTimeFormat().resolvedOptions().timeZone,
-                navigator.platform
-            ].join("||");
-
-            return simpleHash(data);
+        function simpanDataKode(data) {
+            localStorage.setItem("kodeVoting", JSON.stringify(data));
         }
 
-        function getCookie(name) {
-            let value = "; " + document.cookie;
-            let parts = value.split("; " + name + "=");
-            if (parts.length === 2) return parts.pop().split(";").shift();
-        }
+
+        /* =====================================================
+           DEVICE ID
+        ===================================================== */
 
         function getOrCreateDeviceId() {
+
             let deviceId =
                 localStorage.getItem("deviceId") ||
                 sessionStorage.getItem("deviceId") ||
@@ -328,6 +323,18 @@
             }
 
             return deviceId;
+        }
+
+
+        /* =====================================================
+           UTIL
+        ===================================================== */
+
+        function getCookie(name) {
+            let value = "; " + document.cookie;
+            let parts = value.split("; " + name + "=");
+            if (parts.length === 2) return parts.pop().split(";").shift();
+            return null;
         }
 
         function tampilkanError(pesan) {
